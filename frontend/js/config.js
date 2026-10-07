@@ -23,7 +23,7 @@ const API_BASE_URL = (function() {
     
     // When running on Netlify (*.netlify.app) or external domain, target Render backend
     if (!isLocal) {
-      return 'https://smart-krishi-backend.onrender.com';
+      return 'https://smart-krishi-backend-quny.onrender.com';
     }
 
     // Dynamic local origin without hardcoding
@@ -31,7 +31,7 @@ const API_BASE_URL = (function() {
     return `${protocol}//${hostname}:8080`;
   }
 
-  return 'https://smart-krishi-backend.onrender.com';
+  return 'https://smart-krishi-backend-quny.onrender.com';
 })();
 
 // Export globally for all modules
