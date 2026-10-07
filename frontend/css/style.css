@@ -1,0 +1,620 @@
+/* ===================================================================
+   SMART KRISHI - Modern Agriculture SaaS CSS
+   Professional Indian Agro-Tech Design System
+   =================================================================== */
+
+:root {
+  --primary-color: #2e7d32;
+  --primary-dark: #1b5e20;
+  --primary-light: #4caf50;
+  --primary-subtle: #e8f5e9;
+  --primary-border: #c8e6c9;
+  --accent-gold: #f59e0b;
+  --accent-gold-subtle: #fef3c7;
+  --secondary-earth: #8d6e63;
+  --secondary-bg: #efebe9;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --bg-main: #f8faf8;
+  --bg-card: #ffffff;
+  --border-color: #e5e7eb;
+  --border-radius-sm: 8px;
+  --border-radius-md: 12px;
+  --border-radius-lg: 16px;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 10px 15px -3px rgba(46, 125, 50, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --transition: all 0.25s ease-in-out;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
+}
+
+/* Typography & Links */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.015em;
+}
+
+a {
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+/* Professional Navbar */
+.smart-navbar {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.75rem 0;
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+}
+
+.navbar-brand {
+  font-weight: 800;
+  font-size: 1.35rem;
+  color: var(--primary-dark) !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-icon {
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+  color: #ffffff;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+}
+
+.navbar-nav .nav-link {
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--primary-color);
+  background-color: var(--primary-subtle);
+}
+
+.navbar-nav .nav-link.active {
+  color: var(--primary-dark);
+  font-weight: 600;
+  background-color: var(--primary-subtle);
+}
+
+/* Hero Section */
+.hero-section {
+  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 50%, #f1f8e9 100%);
+  border-bottom: 1px solid var(--primary-border);
+  padding: 4.5rem 0 3.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-badge {
+  background-color: #ffffff;
+  border: 1px solid var(--primary-border);
+  color: var(--primary-dark);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: var(--shadow-subtle);
+}
+
+.hero-title {
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #0f172a;
+}
+
+.hero-title span {
+  color: var(--primary-color);
+}
+
+.hero-lead {
+  font-size: 1.15rem;
+  color: var(--text-secondary);
+  max-width: 620px;
+}
+
+/* Feature Cards & Custom Cards */
+.agro-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.agro-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-border);
+}
+
+.card-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.icon-green {
+  background-color: var(--primary-subtle);
+  color: var(--primary-dark);
+}
+
+.icon-amber {
+  background-color: var(--accent-gold-subtle);
+  color: #b45309;
+}
+
+.icon-blue {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+.icon-red {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.icon-purple {
+  background-color: #f3e8ff;
+  color: #7e22ce;
+}
+
+/* Buttons */
+.btn-agro-primary {
+  background: var(--primary-color);
+  color: #ffffff;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  padding: 0.6rem 1.4rem;
+  box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
+  transition: var(--transition);
+}
+
+.btn-agro-primary:hover {
+  background: var(--primary-dark);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.25);
+}
+
+.btn-agro-outline {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1.5px solid var(--primary-color);
+  font-weight: 600;
+  border-radius: var(--border-radius-sm);
+  padding: 0.55rem 1.35rem;
+  transition: var(--transition);
+}
+
+.btn-agro-outline:hover {
+  background: var(--primary-subtle);
+  color: var(--primary-dark);
+  border-color: var(--primary-dark);
+}
+
+/* Dashboard Badges & Metrics */
+.metric-box {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metric-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.metric-value {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Weather Display */
+.weather-hero-card {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #3b82f6 100%);
+  color: #ffffff;
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
+  box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.25);
+}
+
+.weather-forecast-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  padding: 1rem;
+  text-align: center;
+  box-shadow: var(--shadow-subtle);
+  transition: var(--transition);
+}
+
+.weather-forecast-card:hover {
+  border-color: var(--primary-light);
+  transform: translateY(-2px);
+}
+
+/* Image Upload Preview Box for Disease Detection */
+.upload-dropzone {
+  border: 2px dashed #9ca3af;
+  background-color: #fafafa;
+  border-radius: var(--border-radius-md);
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.upload-dropzone:hover, .upload-dropzone.dragover {
+  border-color: var(--primary-color);
+  background-color: var(--primary-subtle);
+}
+
+.preview-container {
+  max-height: 320px;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-subtle);
+}
+
+.preview-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Tables */
+.table-agro {
+  background: #ffffff;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  border: 1px solid var(--border-color);
+}
+
+.table-agro thead {
+  background-color: #f9fafb;
+}
+
+.table-agro thead th {
+  font-weight: 600;
+  font-size: 0.825rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.85rem 1rem;
+}
+
+.table-agro tbody td {
+  padding: 0.85rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.925rem;
+}
+
+.table-agro tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-agro tbody tr:hover {
+  background-color: #f8faf8;
+}
+
+/* Badges */
+.badge-trend-rising {
+  background-color: #fee2e2;
+  color: #dc2626;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+.badge-trend-falling {
+  background-color: #ecfdf5;
+  color: #059669;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+.badge-trend-stable {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+}
+
+/* Forms */
+.form-control, .form-select {
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.625rem 0.85rem;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+}
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 0.35rem;
+}
+
+/* Toast Notifications */
+.toast-container-agro {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.agro-toast {
+  min-width: 300px;
+  max-width: 420px;
+  background: #ffffff;
+  border-radius: var(--border-radius-md);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-left: 5px solid var(--primary-color);
+  padding: 0.9rem 1.15rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.agro-toast.toast-error {
+  border-left-color: #ef4444;
+}
+
+.agro-toast.toast-warning {
+  border-left-color: #f59e0b;
+}
+
+.agro-toast.toast-info {
+  border-left-color: #3b82f6;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Empty & Loading states */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid rgba(46, 125, 50, 0.2);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Footer */
+.smart-footer {
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  padding: 2.5rem 0 1.5rem;
+  margin-top: auto;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.smart-footer a {
+  color: var(--text-secondary);
+}
+
+.smart-footer a:hover {
+  color: var(--primary-color);
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: var(--border-radius-md);
+  border: none;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 1.25rem 1.5rem;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 1.5rem;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  .weather-hero-card {
+    padding: 1.25rem;
+  }
+  .agro-toast {
+    width: 90vw;
+  }
+}
+
+/* ===================================================================
+   Nearby Mandi Prices Styles
+   =================================================================== */
+.mandi-card {
+  background: #ffffff;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.mandi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary-border);
+}
+
+.price-box-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 0.5rem;
+  text-align: center;
+}
+
+.price-box-item .label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  display: block;
+}
+
+.price-box-item .val {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.price-box-item .val.modal-val {
+  color: var(--primary-color);
+  font-size: 1.15rem;
+}
+
+.distance-pill {
+  background-color: #f0fdf4;
+  color: var(--primary-dark);
+  border: 1px solid var(--primary-border);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 50rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-source-gov {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  font-weight: 600;
+}
+
+.badge-source-cached {
+  background-color: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+  font-weight: 600;
+}
+
+.badge-source-db {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+  font-weight: 600;
+}

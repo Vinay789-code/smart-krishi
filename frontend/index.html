@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Custom Agricultural Theme CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="container">
+        <div class="row align-items-center g-5">
+          <div class="col-lg-7">
+            <div class="hero-badge mb-3">
+              <i class="bi bi-patch-check-fill text-success"></i> Empowering Indian Farmers with Precision Tech
+            </div>
+            <h1 class="hero-title mb-3">
+              Next-Generation Digital Agriculture with <span>Smart Krishi</span>
+            </h1>
+            <p class="hero-lead mb-4">
+              Integrated agricultural intelligence platform: precision crop recommendations, hyper-local weather & irrigation advisories, instant AI plant disease detection, and real-time APMC mandi market prices.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+              <a href="crop-recommendation.html" class="btn btn-agro-primary btn-lg px-4">
+                <i class="bi bi-cpu me-2"></i>Recommend Crop
+              </a>
+              <a href="weather.html" class="btn btn-agro-outline btn-lg px-4">
+                <i class="bi bi-cloud-sun me-2"></i>Weather & Irrigation
+              </a>
+              <a href="register.html" class="btn btn-outline-secondary btn-lg px-4">
+                <i class="bi bi-person-plus me-2"></i>Join as Farmer
+              </a>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <!-- Hero Live Card -->
+            <div class="agro-card p-4 shadow-lg border-success border-opacity-25">
+              <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <span class="badge bg-success-subtle text-success fs-6"><i class="bi bi-broadcast me-1"></i>Live Agro Portal</span>
+                <span class="text-muted small">5 Modules Active</span>
+              </div>
+              <div class="d-flex align-items-center gap-3 p-3 rounded bg-light mb-3">
+                <div class="metric-icon icon-green"><i class="bi bi-flower1"></i></div>
+                <div>
+                  <div class="fw-bold text-dark">Data-Driven Yield Optimization</div>
+                  <div class="small text-muted">Tailored to NPK & Soil chemistry</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-3 p-3 rounded bg-light mb-3">
+                <div class="metric-icon icon-blue"><i class="bi bi-droplet-half"></i></div>
+                <div>
+                  <div class="fw-bold text-dark">Evaporation-Based Irrigation</div>
+                  <div class="small text-muted">Save water & avert waterlogging</div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-3 p-3 rounded bg-light">
+                <div class="metric-icon icon-amber"><i class="bi bi-graph-up-arrow"></i></div>
+                <div>
+                  <div class="fw-bold text-dark">Mandi Price Transparency</div>
+                  <div class="small text-muted">Daily modal rates across Indian APMCs</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 Integrated Modules Section -->
+    <section class="py-5 bg-white">
+      <div class="container py-4">
+        <div class="text-center max-w-700 mx-auto mb-5">
+          <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold mb-2">Complete Agriculture Stack</span>
+          <h2 class="display-6 fw-bold">5 Powerful Integrated Modules</h2>
+          <p class="text-muted">Designed specifically to solve real challenges faced by Indian farming communities.</p>
+        </div>
+
+        <div class="row g-4">
+          <!-- Module 1: Farmer Management -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-green">
+                <i class="bi bi-person-badge"></i>
+              </div>
+              <h4 class="fw-bold mb-2">1. Farmer Management</h4>
+              <p class="text-secondary small mb-4">
+                Secure registration and authentication, digital farmer profiles, multi-plot land records, soil classification, and personalized activity tracking.
+              </p>
+              <div class="mt-auto">
+                <a href="register.html" class="fw-bold text-success small">Register Farmer Account <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module 2: Crop Recommendation -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-blue">
+                <i class="bi bi-cpu"></i>
+              </div>
+              <h4 class="fw-bold mb-2">2. Crop Recommendation</h4>
+              <p class="text-secondary small mb-4">
+                Agronomic recommendation engine analyzing Nitrogen, Phosphorus, Potassium, pH, rainfall, temperature, and soil type to prescribe optimal crops.
+              </p>
+              <div class="mt-auto">
+                <a href="crop-recommendation.html" class="fw-bold text-success small">Test Recommendation Engine <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module 3: Weather & Irrigation -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-amber">
+                <i class="bi bi-cloud-sun"></i>
+              </div>
+              <h4 class="fw-bold mb-2">3. Weather & Irrigation</h4>
+              <p class="text-secondary small mb-4">
+                Live multi-day forecasts for Indian farming districts with intelligent irrigation guidance to conserve water and prevent root diseases.
+              </p>
+              <div class="mt-auto">
+                <a href="weather.html" class="fw-bold text-success small">Check Weather & Irrigation <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module 4: Disease Detection -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-red">
+                <i class="bi bi-shield-shaded"></i>
+              </div>
+              <h4 class="fw-bold mb-2">4. Crop Disease Detection</h4>
+              <p class="text-secondary small mb-4">
+                Instant leaf pathology scanner identifying fungal and bacterial blights with dual organic and chemical remedy protocols.
+              </p>
+              <div class="mt-auto">
+                <a href="disease-detection.html" class="fw-bold text-success small">Scan Plant Leaf <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module 5: Market & Advisory -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-purple">
+                <i class="bi bi-graph-up"></i>
+              </div>
+              <h4 class="fw-bold mb-2">5. Market Mandi Prices</h4>
+              <p class="text-secondary small mb-4">
+                Transparent daily APMC commodity rates (Min, Max, Modal prices) with price trend indicators across Maharashtra, MP, Punjab, Gujarat, and UP.
+              </p>
+              <div class="mt-auto">
+                <a href="market-prices.html" class="fw-bold text-success small">Explore Mandi Rates <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bonus Module: Advisory & Schemes -->
+          <div class="col-lg-4 col-md-6">
+            <div class="agro-card p-4">
+              <div class="card-icon-box icon-green">
+                <i class="bi bi-journal-bookmark-fill"></i>
+              </div>
+              <h4 class="fw-bold mb-2">Farming Advisory & Schemes</h4>
+              <p class="text-secondary small mb-4">
+                Guidance on PM-KISAN, PMFBY crop insurance, Soil Health Cards, and seasonal Kharif/Rabi pest management.
+              </p>
+              <div class="mt-auto">
+                <a href="advisory.html" class="fw-bold text-success small">Browse Advisories & Schemes <i class="bi bi-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick APMC Mandi Ticker Preview -->
+    <section class="py-5 bg-light border-top">
+      <div class="container">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+          <div>
+            <h3 class="fw-bold mb-1">Today's Mandi Market Highlights</h3>
+            <p class="text-muted small mb-0">Modal rates per quintal reported across Indian APMC yards</p>
+          </div>
+          <a href="market-prices.html" class="btn btn-sm btn-agro-outline mt-3 mt-md-0">View All Mandis <i class="bi bi-arrow-right ms-1"></i></a>
+        </div>
+
+        <div class="row g-3" id="home-market-highlights">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      UI.renderNavbar('home');
+      UI.renderFooter();
+
+      // Load home market highlights
+      try {
+        const res = await API.get('/api/market/highlights');
+        const container = document.getElementById('home-market-highlights');
+        if (res && res.data && container) {
+          container.innerHTML = res.data.slice(0, 4).map(p => `
+            <div class="col-lg-3 col-md-6">
+              <div class="p-3 bg-white rounded border shadow-sm h-100">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="fw-bold text-dark fs-6">${p.cropName}</span>
+                  <span class="badge ${p.trend === 'RISING' ? 'badge-trend-rising' : (p.trend === 'FALLING' ? 'badge-trend-falling' : 'badge-trend-stable')}">${p.trend}</span>
+                </div>
+                <div class="text-success fw-bold fs-5">${UI.formatCurrency(p.modalPrice)} <small class="text-muted fs-6">${p.unit}</small></div>
+                <div class="small text-muted mt-1"><i class="bi bi-geo-alt me-1"></i>${p.marketName}, ${p.state}</div>
+              </div>
+            </div>
+          `).join('');
+        }
+      } catch (err) {
+        console.warn('Could not load home highlights:', err);
+      }
+    });
+  </script>
+</body>
+</html>

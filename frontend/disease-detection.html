@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Crop Disease Detection | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-4">
+    <div class="container">
+      <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold mb-2">Module 4 • Deep Learning Plant Pathology</span>
+        <h2 class="display-6 fw-bold text-dark">AI Crop Disease Diagnostic Engine</h2>
+        <p class="text-muted">Upload high-resolution plant leaf photos to run real-time computer vision inference. Identifies foliar pathologies with confidence scores and targeted organic & chemical remedies.</p>
+      </div>
+
+      <!-- Instruction / Supported Formats Bar -->
+      <div class="card p-3 rounded-3 shadow-sm border mb-4 bg-white">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+          <div class="d-flex align-items-center gap-2 flex-wrap text-secondary small">
+            <i class="bi bi-info-circle-fill text-danger"></i>
+            <strong>Photo Diagnostic Guidelines:</strong>
+            <span>Capture a clear, focused close-up of the symptomatic leaf under daylight. Avoid extreme shadows or blur.</span>
+          </div>
+          <span class="small badge bg-light text-dark border">JPEG, PNG, WebP • Max 10MB</span>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Upload & Controls -->
+        <div class="col-lg-6">
+          <div class="agro-card p-4">
+            <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+              <i class="bi bi-cloud-arrow-up me-2 text-danger"></i>Upload Plant Leaf Image
+            </h5>
+
+            <!-- Dropzone -->
+            <div id="disease-dropzone" class="upload-dropzone mb-3">
+              <input type="file" id="disease-file-input" class="d-none" accept="image/jpeg,image/png,image/webp">
+              <div id="dropzone-prompt">
+                <i class="bi bi-camera fs-1 text-danger d-block mb-2"></i>
+                <div class="fw-bold text-dark mb-1">Click to browse or drag and drop leaf photo</div>
+                <div class="text-muted small">Supports JPG, PNG, or WebP up to 10MB</div>
+              </div>
+
+              <!-- Preview Box -->
+              <div id="preview-box" class="preview-container d-none">
+                <img id="preview-image" src="" alt="Leaf Preview" class="img-fluid rounded border mb-2" style="max-height: 280px; object-fit: contain; width: 100%;">
+                <div class="d-flex justify-content-between align-items-center bg-light p-2 rounded border">
+                  <div>
+                    <span id="selected-filename" class="small text-truncate fw-semibold text-dark d-block"></span>
+                    <span id="selected-filesize" class="small text-muted"></span>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearSelectedImage()">
+                    <i class="bi bi-trash me-1"></i>Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Loading Spinner Container -->
+            <div id="disease-loading-state" class="p-3 bg-light rounded border text-center mb-3 d-none">
+              <div class="spinner-border text-danger mb-2" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <div class="fw-bold text-dark" id="disease-loading-text">Analyzing image with AI...</div>
+              <div class="small text-muted">Running neural network classification on plant leaf features...</div>
+            </div>
+
+            <button type="button" id="btn-analyze-disease" class="btn btn-agro-primary w-100 py-3 fs-6" disabled>
+              <i class="bi bi-cpu me-2"></i>Analyze with AI
+            </button>
+          </div>
+        </div>
+
+        <!-- Diagnosis Result & History -->
+        <div class="col-lg-6">
+          <!-- Error Alert Card (Shown on API error, network failure, or timeout) -->
+          <div id="disease-error-card" class="alert alert-danger p-4 rounded-3 shadow border-danger mb-4 d-none">
+            <div class="d-flex align-items-start gap-3">
+              <i class="bi bi-exclamation-octagon-fill fs-2 text-danger"></i>
+              <div class="flex-grow-1">
+                <h5 class="fw-bold text-dark mb-1">AI Diagnosis Notice</h5>
+                <p class="mb-2 text-danger fw-semibold" id="disease-error-msg">
+                  AI disease detection encountered an error.
+                </p>
+                <div class="small text-secondary" id="disease-error-suggestion">
+                  Please verify your image sample and try again.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Confidence Alert (Shown if score < 60%) -->
+          <div id="disease-low-confidence-card" class="alert alert-warning p-4 rounded-3 shadow border-warning mb-4 d-none">
+            <div class="d-flex align-items-start gap-3">
+              <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
+              <div>
+                <h5 class="fw-bold text-dark mb-1">Low Confidence Diagnosis</h5>
+                <p class="mb-2" id="low-conf-msg">
+                  Low confidence — image quality or symptoms are insufficient for a reliable diagnosis.
+                </p>
+                <div class="small fw-semibold text-secondary">
+                  <strong>Recommendation:</strong> Please upload a clear, focused close-up image of the affected leaf taken in natural lighting.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Successful Diagnosis Result Card -->
+          <div id="disease-result-card" class="agro-card p-4 border-danger border-2 shadow-lg mb-4 d-none">
+            <div class="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
+              <span class="badge bg-danger-subtle text-danger fs-6" id="res-crop-tag">Crop</span>
+              <span class="badge bg-warning text-dark fs-6" id="res-status-badge">Disease Detected</span>
+              <span class="badge bg-danger fs-6" id="res-severity-badge">High Severity</span>
+            </div>
+
+            <h4 class="fw-bold text-danger mb-2" id="res-disease-name">Detected Pathology</h4>
+
+            <!-- Confidence Bar -->
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small text-muted mb-1">
+                <span class="fw-semibold">AI Model Confidence Score</span>
+                <span id="res-confidence-text" class="fw-bold text-dark">94.2%</span>
+              </div>
+              <div class="progress" style="height: 20px;">
+                <div id="res-confidence-bar" class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: 90%;">90%</div>
+              </div>
+            </div>
+
+            <!-- Alternative Predictions List -->
+            <div id="res-alternatives-container" class="mb-3 d-none">
+              <div class="small fw-bold text-secondary mb-1"><i class="bi bi-diagram-3 me-1"></i>Possible Alternatives:</div>
+              <ul class="list-unstyled mb-0 small" id="res-alternatives-list"></ul>
+            </div>
+
+            <!-- Symptoms -->
+            <div class="p-3 bg-light rounded border mb-3">
+              <h6 class="fw-bold text-dark mb-1"><i class="bi bi-eye-fill text-danger me-2"></i>Observed Symptoms</h6>
+              <p class="small text-secondary mb-0" id="res-symptoms">Symptoms</p>
+            </div>
+
+            <!-- Dual Treatment (Organic & Chemical) -->
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <div class="p-3 bg-success-subtle bg-opacity-25 rounded border border-success-subtle h-100">
+                  <h6 class="fw-bold text-success mb-1"><i class="bi bi-flower2 me-1"></i>Organic / Bio Control</h6>
+                  <p class="small text-secondary mb-0" id="res-organic-treatment">Organic treatment</p>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="p-3 bg-primary-subtle bg-opacity-25 rounded border border-primary-subtle h-100">
+                  <h6 class="fw-bold text-primary mb-1"><i class="bi bi-capsule me-1"></i>Chemical Protection</h6>
+                  <p class="small text-secondary mb-0" id="res-chemical-treatment">Chemical treatment</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prevention -->
+            <div class="p-3 bg-light rounded border">
+              <h6 class="fw-bold text-dark mb-1"><i class="bi bi-shield-check text-success me-2"></i>Long-Term Preventive Measures</h6>
+              <p class="small text-secondary mb-0" id="res-prevention">Prevention advice</p>
+            </div>
+          </div>
+
+          <!-- History -->
+          <div class="agro-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+              <h5 class="fw-bold text-dark mb-0">
+                <i class="bi bi-clock-history me-2 text-danger"></i>Your Disease Scan History
+              </h5>
+              <span class="small text-muted">Personal records</span>
+            </div>
+            <div id="disease-history-container">
+              <div class="text-muted small py-3 text-center">
+                Sign in to save and monitor past leaf pathology scans.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/disease-detection.js"></script>
+</body>
+</html>

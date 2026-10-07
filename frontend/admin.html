@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Console | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-4">
+    <div class="container">
+      <!-- Admin Header -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-white p-4 rounded-3 border shadow-sm mb-4">
+        <div>
+          <span class="badge bg-danger-subtle text-danger mb-1"><i class="bi bi-shield-lock-fill me-1"></i>System Administration</span>
+          <h2 class="fw-bold mb-1">Smart Krishi Control Portal</h2>
+          <div class="text-muted small">Manage platform users, publish commodity prices, and update agricultural advisories</div>
+        </div>
+        <div class="mt-3 mt-md-0 d-flex gap-2">
+          <button class="btn btn-agro-primary" data-bs-toggle="modal" data-bs-target="#addPriceModal">
+            <i class="bi bi-plus-circle me-1"></i>Add Market Price
+          </button>
+          <button class="btn btn-agro-outline" data-bs-toggle="modal" data-bs-target="#addAdvisoryModal">
+            <i class="bi bi-journal-plus me-1"></i>Publish Advisory
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistics Row -->
+      <div class="row g-3 mb-4">
+        <div class="col-lg col-md-4 col-sm-6">
+          <div class="metric-box">
+            <div class="metric-icon icon-green"><i class="bi bi-people-fill"></i></div>
+            <div>
+              <div class="metric-value" id="stat-farmers">0</div>
+              <div class="metric-label">Farmers</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg col-md-4 col-sm-6">
+          <div class="metric-box">
+            <div class="metric-icon icon-blue"><i class="bi bi-cpu"></i></div>
+            <div>
+              <div class="metric-value" id="stat-recs">0</div>
+              <div class="metric-label">Crop Recs</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg col-md-4 col-sm-6">
+          <div class="metric-box">
+            <div class="metric-icon icon-red"><i class="bi bi-shield-shaded"></i></div>
+            <div>
+              <div class="metric-value" id="stat-diseases">0</div>
+              <div class="metric-label">Disease Scans</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg col-md-6 col-sm-6">
+          <div class="metric-box">
+            <div class="metric-icon icon-purple"><i class="bi bi-graph-up"></i></div>
+            <div>
+              <div class="metric-value" id="stat-prices">0</div>
+              <div class="metric-label">Commodities</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg col-md-6 col-sm-6">
+          <div class="metric-box">
+            <div class="metric-icon icon-amber"><i class="bi bi-journal-text"></i></div>
+            <div>
+              <div class="metric-value" id="stat-advisories">0</div>
+              <div class="metric-label">Advisories</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mandi Data Source Status -->
+      <div class="card p-3 rounded-3 shadow-sm border mb-4 bg-white">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-light text-dark border px-2 py-1"><i class="bi bi-diagram-3-fill text-primary me-1"></i>Mandi Data Source</span>
+            <span class="badge bg-secondary-subtle text-secondary" id="admin-gov-api-status">Checking Status...</span>
+            <span class="small text-muted" id="admin-gov-api-sync">Last Successful Sync: --</span>
+          </div>
+          <div class="small text-muted">
+            Official Source: <strong>data.gov.in / AGMARKNET</strong> (Fallback: Smart Krishi Database)
+          </div>
+        </div>
+      </div>
+
+      <!-- Registered Farmers Management Table -->
+      <div class="agro-card p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <div>
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-person-lines-fill me-2 text-success"></i>Registered Farmers Directory</h5>
+            <small class="text-muted">Farmer profiles, landholdings and contact details</small>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-hover table-agro align-middle mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Farmer Name & Email</th>
+                <th>Phone</th>
+                <th>Location (Village, District, State)</th>
+                <th>Land Area</th>
+                <th>Soil Type</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-farmers-tbody">
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <span class="loading-spinner"></span>
+                  <p class="small mt-2 mb-0">Loading farmers directory...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Market Price Modal -->
+  <div class="modal fade" id="addPriceModal" tabindex="-1" aria-labelledby="addPriceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="admin-add-price-form">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold" id="addPriceModalLabel"><i class="bi bi-plus-circle me-2 text-success"></i>Add APMC Mandi Commodity Price</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">Crop Name *</label>
+                <input type="text" id="price-crop" class="form-control" placeholder="e.g. Wheat" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Variety / Grade</label>
+                <input type="text" id="price-variety" class="form-control" placeholder="e.g. Sharbati Grade A">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Mandi / Market Yard *</label>
+              <input type="text" id="price-mandi" class="form-control" placeholder="e.g. Indore APMC Yard" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">District *</label>
+                <input type="text" id="price-district" class="form-control" placeholder="e.g. Indore" required>
+              </div>
+              <div class="col-6">
+                <label class="form-label">State *</label>
+                <input type="text" id="price-state" class="form-control" placeholder="e.g. Madhya Pradesh" required>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-4">
+                <label class="form-label">Min Price *</label>
+                <input type="number" id="price-min" class="form-control" placeholder="2500" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label">Max Price *</label>
+                <input type="number" id="price-max" class="form-control" placeholder="2900" required>
+              </div>
+              <div class="col-4">
+                <label class="form-label">Modal Price *</label>
+                <input type="number" id="price-modal" class="form-control" placeholder="2750" required>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">Unit</label>
+                <select id="price-unit" class="form-select">
+                  <option value="₹/Quintal">₹/Quintal</option>
+                  <option value="₹/Kg">₹/Kg</option>
+                  <option value="₹/Tonne">₹/Tonne</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Market Trend</label>
+                <select id="price-trend" class="form-select">
+                  <option value="STABLE">Stable</option>
+                  <option value="RISING">Rising</option>
+                  <option value="FALLING">Falling</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-agro-primary">Save Price Record</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Advisory Modal -->
+  <div class="modal fade" id="addAdvisoryModal" tabindex="-1" aria-labelledby="addAdvisoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <form id="admin-add-advisory-form">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold" id="addAdvisoryModalLabel"><i class="bi bi-journal-plus me-2 text-success"></i>Publish Agricultural Advisory</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label">Advisory / Scheme Title *</label>
+              <input type="text" id="adv-title" class="form-control" placeholder="e.g. PM-KISAN Samman Nidhi Yojana" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-4">
+                <label class="form-label">Category *</label>
+                <select id="adv-category" class="form-select" required>
+                  <option value="SCHEME">Govt Scheme</option>
+                  <option value="FERTILIZER">Fertilizer Guide</option>
+                  <option value="PEST_CONTROL">Pest Control</option>
+                  <option value="FARMING_TIPS">Farming Tips</option>
+                  <option value="SEASONAL">Seasonal Advisory</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Season</label>
+                <select id="adv-season" class="form-select">
+                  <option value="All Season">All Season</option>
+                  <option value="Kharif">Kharif</option>
+                  <option value="Rabi">Rabi</option>
+                  <option value="Zaid">Zaid / Summer</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Target Crop</label>
+                <input type="text" id="adv-crop" class="form-control" placeholder="e.g. Wheat / All Crops">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Short Summary</label>
+              <input type="text" id="adv-summary" class="form-control" placeholder="Brief 1-line description of the advisory">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Full Details & Guidelines *</label>
+              <textarea id="adv-details" rows="4" class="form-control" placeholder="Detailed agronomic guidance or scheme eligibility criteria" required></textarea>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-6">
+                <label class="form-label">Applicable State / Region</label>
+                <input type="text" id="adv-state" class="form-control" placeholder="e.g. All India or Maharashtra">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Official Link (Optional)</label>
+                <input type="url" id="adv-link" class="form-control" placeholder="https://pmkisan.gov.in">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-agro-primary">Publish Advisory</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

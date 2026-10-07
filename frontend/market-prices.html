@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nearby Mandi Prices | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-4">
+    <div class="container">
+      <!-- Section Header -->
+      <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="badge bg-purple-subtle text-dark px-3 py-2 rounded-pill fw-semibold mb-2" style="background-color: #f3e8ff;">
+          Module 5 • Market Economics & APMC Mandi Telemetry
+        </span>
+        <h2 class="display-6 fw-bold text-dark">🌾 Nearby Mandi Prices</h2>
+        <p class="text-muted">Find the latest available mandi prices near your farm across regulated APMCs to help you sell at peak value.</p>
+      </div>
+
+      <!-- Controls & Filter Card -->
+      <div class="card p-4 rounded-3 shadow-sm border mb-4 bg-white">
+        <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+          <i class="bi bi-geo-alt-fill text-success me-2"></i>Find Mandi Prices Near You
+        </h5>
+
+        <div class="row g-3">
+          <!-- Step 1: Location Selection -->
+          <div class="col-lg-5 col-12">
+            <label class="form-label small fw-bold text-secondary mb-1">Step 1: Your Farm Location</label>
+            <div class="d-flex flex-column gap-2">
+              <button type="button" id="btn-use-location" class="btn btn-outline-success fw-semibold w-100 py-2" onclick="handleUseMyLocation()">
+                <i class="bi bi-crosshair me-2"></i>📍 Use My Location (GPS)
+              </button>
+              <div class="text-center position-relative my-1">
+                <hr class="my-2">
+                <span class="position-absolute top-50 start-50 translate-middle bg-white px-2 small text-muted">OR Select Manually</span>
+              </div>
+              <div class="row g-2">
+                <div class="col-6">
+                  <label for="mandi-state-select" class="visually-hidden">State</label>
+                  <select id="mandi-state-select" class="form-select form-select-sm">
+                    <option value="">State: All States</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label for="mandi-district-select" class="visually-hidden">District</label>
+                  <select id="mandi-district-select" class="form-select form-select-sm">
+                    <option value="">District: All Districts</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Radius Selection -->
+          <div class="col-lg-2 col-md-4 col-6">
+            <label for="mandi-radius-select" class="form-label small fw-bold text-secondary mb-1">Step 2: Radius</label>
+            <select id="mandi-radius-select" class="form-select py-2">
+              <option value="10">10 km</option>
+              <option value="25">25 km</option>
+              <option value="50" selected>50 km (Default)</option>
+              <option value="100">100 km</option>
+            </select>
+            <small class="text-muted d-block mt-1">Search perimeter</small>
+          </div>
+
+          <!-- Step 3: Crop Selection -->
+          <div class="col-lg-3 col-md-4 col-6">
+            <label for="mandi-crop-select" class="form-label small fw-bold text-secondary mb-1">Step 3: Crop Filter</label>
+            <select id="mandi-crop-select" class="form-select py-2">
+              <option value="">🌾 All Crops</option>
+            </select>
+            <small class="text-muted d-block mt-1">Filter by commodity</small>
+          </div>
+
+          <!-- Step 4: Sorting & Search Button -->
+          <div class="col-lg-2 col-md-4 col-12 d-flex flex-column justify-content-between">
+            <div>
+              <label for="mandi-sort-select" class="form-label small fw-bold text-secondary mb-1">Step 4: Sort</label>
+              <select id="mandi-sort-select" class="form-select form-select-sm mb-2">
+                <option value="nearest" selected>Nearest First</option>
+                <option value="price_desc">Highest Price</option>
+                <option value="price_asc">Lowest Price</option>
+                <option value="date_desc">Latest Updated</option>
+              </select>
+            </div>
+            <button type="button" id="btn-find-prices" class="btn btn-agro-primary w-100 py-2 fw-semibold" onclick="fetchMandiPrices()">
+              <i class="bi bi-search me-1"></i>Find Prices
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Location Feedback & Source Transparency Bar -->
+      <div id="mandi-status-bar" class="card p-3 rounded-3 shadow-sm border mb-4 bg-white d-none">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 flex-wrap">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="badge bg-light text-dark border px-3 py-2" id="mandi-location-badge">
+              <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+              <span id="mandi-location-text">Jaipur, Rajasthan</span>
+            </span>
+            <span class="badge badge-source-gov px-3 py-2 rounded-pill" id="mandi-source-badge">
+              <i class="bi bi-patch-check-fill me-1"></i>
+              <span id="mandi-source-text">Latest Government Mandi Data</span>
+            </span>
+            <span class="small text-muted" id="mandi-updated-text">
+              <i class="bi bi-clock-history me-1"></i>Last Updated: --
+            </span>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="View toggle">
+              <button type="button" class="btn btn-outline-secondary active" id="btn-view-cards" title="Cards View">
+                <i class="bi bi-grid-fill me-1"></i>Cards
+              </button>
+              <button type="button" class="btn btn-outline-secondary" id="btn-view-table" title="Table View">
+                <i class="bi bi-table me-1"></i>Table
+              </button>
+            </div>
+            <span class="badge bg-light text-secondary border px-3 py-2" id="mandi-results-count">0 mandis</span>
+          </div>
+        </div>
+
+        <!-- Optional notice alert banner -->
+        <div id="mandi-notice-box" class="alert alert-info py-2 px-3 mb-0 mt-3 small d-none" role="alert">
+          <i class="bi bi-info-circle-fill me-1"></i>
+          <span id="mandi-notice-msg"></span>
+        </div>
+      </div>
+
+      <!-- Error Notice Card -->
+      <div id="mandi-error-card" class="alert alert-warning p-4 rounded-3 shadow-sm border-warning mb-4 d-none">
+        <div class="d-flex align-items-start gap-3">
+          <i class="bi bi-exclamation-triangle-fill fs-2 text-warning"></i>
+          <div class="flex-grow-1">
+            <h5 class="fw-bold text-dark mb-1" id="mandi-error-title">Location Notice</h5>
+            <p class="mb-2 text-dark" id="mandi-error-msg">
+              Location permission was denied. Please select your state and district manually.
+            </p>
+            <button type="button" class="btn btn-sm btn-outline-dark" onclick="focusManualLocation()">
+              Select Location Manually <i class="bi bi-arrow-down-short"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="mandi-loading-state" class="text-center py-5 text-muted d-none">
+        <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="fw-bold text-dark mt-3 mb-1">Locating Regulated Mandis...</h5>
+        <p class="small text-muted mb-0">Retrieving wholesale prices from government APMC records & Smart Krishi market engine.</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="mandi-empty-state" class="card p-5 text-center rounded-3 shadow-sm border mb-4 bg-white d-none">
+        <div class="max-w-500 mx-auto">
+          <i class="bi bi-geo-alt-fill text-muted display-4 mb-3 d-block"></i>
+          <h4 class="fw-bold text-dark">No Mandis Found In This Radius</h4>
+          <p class="text-muted small" id="mandi-empty-msg">
+            No registered APMC mandi prices found within the selected radius. Try expanding your search radius to 100 km or clearing the crop filter.
+          </p>
+          <div class="d-flex justify-content-center gap-2 mt-3">
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="expandRadius()">
+              <i class="bi bi-arrows-angle-expand me-1"></i>Expand to 100 km
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetCropFilter()">
+              <i class="bi bi-arrow-repeat me-1"></i>Show All Crops
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mandi Cards View (Default) -->
+      <div id="mandi-cards-container">
+        <div class="row g-4" id="mandi-cards-grid">
+          <!-- Populated by market-prices.js renderCards -->
+        </div>
+      </div>
+
+      <!-- Mandi Table View (Optional Toggle) -->
+      <div id="mandi-table-container" class="d-none">
+        <div class="table-responsive shadow-sm rounded-3 bg-white border">
+          <table class="table table-hover table-agro align-middle mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Commodity / Variety</th>
+                <th>Mandi / Location</th>
+                <th>Distance</th>
+                <th>Min Price</th>
+                <th>Max Price</th>
+                <th>Modal Price</th>
+                <th>Unit</th>
+                <th>Arrival Date / Source</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="mandi-table-tbody">
+              <!-- Populated by market-prices.js renderTable -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Mandi Details Modal -->
+  <div class="modal fade" id="mandiDetailsModal" tabindex="-1" aria-labelledby="modal-mandi-name" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-3 shadow">
+        <div class="modal-header border-bottom pb-3">
+          <div>
+            <span class="badge bg-success-subtle text-success fw-bold px-2 py-1 mb-1" id="modal-crop-tag">🌾 Commodity</span>
+            <h5 class="modal-title fw-bold text-dark" id="modal-mandi-name">Mandi Name</h5>
+            <small class="text-muted" id="modal-location">District, State</small>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <!-- Distance and Source banner -->
+          <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded border">
+            <span class="small fw-semibold text-dark">
+              <i class="bi bi-signpost-2 text-primary me-1"></i><span id="modal-distance-text">-- km away</span>
+            </span>
+            <span class="badge badge-source-gov" id="modal-source-badge">Government Data</span>
+          </div>
+
+          <!-- Price comparison grid -->
+          <div class="price-box-grid mb-3">
+            <div class="price-box-item">
+              <span class="label">Min Price</span>
+              <span class="val" id="modal-min-price">₹0</span>
+            </div>
+            <div class="price-box-item">
+              <span class="label">Max Price</span>
+              <span class="val" id="modal-max-price">₹0</span>
+            </div>
+            <div class="price-box-item">
+              <span class="label">Modal Price</span>
+              <span class="val modal-val" id="modal-modal-price">₹0</span>
+            </div>
+          </div>
+
+          <!-- Trading Specs List -->
+          <ul class="list-group list-group-flush small mb-3 border rounded">
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Quality Grade:</span>
+              <strong id="modal-grade">FAQ</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Variety:</span>
+              <strong id="modal-variety">Hybrid / Deshi</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Reported Arrival Date:</span>
+              <strong id="modal-arrival-date">Today</strong>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <span class="text-muted">Standard Trading Unit:</span>
+              <strong>1 Quintal (100 kg)</strong>
+            </li>
+          </ul>
+
+          <div class="alert alert-info py-2 px-3 small mb-0">
+            <i class="bi bi-info-circle me-1"></i>
+            Modal price reflects the most common wholesale transaction price recorded at this APMC yard.
+          </div>
+        </div>
+        <div class="modal-footer border-top pt-2">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+          <a href="#" target="_blank" class="btn btn-success btn-sm px-3" id="modal-navigate-btn">
+            <i class="bi bi-compass me-1"></i>🗺 Navigate with Google Maps
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/market-prices.js?v=2.2"></script>
+</body>
+</html>

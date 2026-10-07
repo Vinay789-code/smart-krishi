@@ -1,0 +1,3 @@
+# Netlify Redirects for Smart Krishi Multi-Page Application
+# Optional proxy rule to avoid CORS if desired:
+# /api/*  https://smart-krishi-backend.onrender.com/api/:splat  200

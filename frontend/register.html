@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Registration | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-5">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+          <div class="agro-card p-4 p-md-5">
+            <div class="text-center mb-4">
+              <span class="brand-icon mx-auto mb-2"><i class="bi bi-person-plus-fill"></i></span>
+              <h3 class="fw-bold text-dark">Join Smart Krishi</h3>
+              <p class="text-muted small">Register your farm profile to access customized crop, irrigation & market advisories</p>
+            </div>
+
+            <form id="register-form">
+              <!-- Personal Details -->
+              <h5 class="fw-bold text-success border-bottom pb-2 mb-3">
+                <i class="bi bi-person-vcard me-2"></i>1. Farmer Personal Details
+              </h5>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="reg-name" class="form-label">Full Name *</label>
+                  <input type="text" id="reg-name" class="form-control" placeholder="e.g. Ramesh Kumar" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="reg-phone" class="form-label">Phone / WhatsApp Number *</label>
+                  <input type="tel" id="reg-phone" class="form-control" placeholder="e.g. 9823456789" pattern="[0-9]{10,15}" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="reg-email" class="form-label">Email Address *</label>
+                  <input type="email" id="reg-email" class="form-control" placeholder="name@domain.com" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="reg-password" class="form-label">Password *</label>
+                  <input type="password" id="reg-password" class="form-control" placeholder="Minimum 6 characters" minlength="6" required>
+                </div>
+              </div>
+
+              <!-- Land & Agriculture Details -->
+              <h5 class="fw-bold text-success border-bottom pb-2 mb-3">
+                <i class="bi bi-geo-alt-fill me-2"></i>2. Farm Location & Soil Attributes
+              </h5>
+
+              <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                  <label for="reg-village" class="form-label">Village / Town *</label>
+                  <input type="text" id="reg-village" class="form-control" placeholder="e.g. Khed" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="reg-district" class="form-label">District *</label>
+                  <input type="text" id="reg-district" class="form-control" placeholder="e.g. Pune" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="reg-state" class="form-label">State *</label>
+                  <select id="reg-state" class="form-select" required>
+                    <option value="">Select State</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra" selected>Maharashtra</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                  </select>
+                </div>
+
+                <div class="col-md-4">
+                  <label for="reg-landArea" class="form-label">Total Land Area (Acres) *</label>
+                  <input type="number" step="0.1" min="0.1" id="reg-landArea" class="form-control" placeholder="e.g. 4.5" required>
+                </div>
+                <div class="col-md-4">
+                  <label for="reg-soilType" class="form-label">Primary Soil Type *</label>
+                  <select id="reg-soilType" class="form-select" required>
+                    <option value="Alluvial">Alluvial Soil</option>
+                    <option value="Black Soil" selected>Black Cotton Soil (Regur)</option>
+                    <option value="Red Soil">Red / Yellow Soil</option>
+                    <option value="Sandy Loam">Sandy Loam</option>
+                    <option value="Clay Loam">Clay / Clay Loam</option>
+                    <option value="Laterite">Laterite Soil</option>
+                  </select>
+                </div>
+                <div class="col-md-4">
+                  <label for="reg-irrigationType" class="form-label">Irrigation System</label>
+                  <select id="reg-irrigationType" class="form-select">
+                    <option value="Drip Irrigation" selected>Drip Irrigation</option>
+                    <option value="Sprinkler">Sprinkler</option>
+                    <option value="Tube Well / Borewell">Tube Well / Borewell</option>
+                    <option value="Canal Irrigation">Canal Irrigation</option>
+                    <option value="Rainfed (Non-irrigated)">Rainfed</option>
+                  </select>
+                </div>
+
+                <div class="col-12">
+                  <label for="reg-primaryCrop" class="form-label">Current Primary Crop (Optional)</label>
+                  <input type="text" id="reg-primaryCrop" class="form-control" placeholder="e.g. Soybean, Wheat, Cotton, Rice">
+                </div>
+              </div>
+
+              <div class="d-grid mb-3">
+                <button type="submit" id="btn-reg-submit" class="btn btn-agro-primary py-2 fs-6">
+                  <i class="bi bi-check-circle me-1"></i>Create Farmer Account
+                </button>
+              </div>
+
+              <div class="text-center small text-muted">
+                Already registered? <a href="login.html" class="text-success fw-bold">Sign In here</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      UI.renderNavbar('register');
+      UI.renderFooter();
+
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btn-reg-submit');
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>Registering...`;
+
+        const payload = {
+          name: document.getElementById('reg-name').value.trim(),
+          phone: document.getElementById('reg-phone').value.trim(),
+          email: document.getElementById('reg-email').value.trim(),
+          password: document.getElementById('reg-password').value,
+          village: document.getElementById('reg-village').value.trim(),
+          district: document.getElementById('reg-district').value.trim(),
+          state: document.getElementById('reg-state').value,
+          landArea: parseFloat(document.getElementById('reg-landArea').value) || 0,
+          soilType: document.getElementById('reg-soilType').value,
+          irrigationType: document.getElementById('reg-irrigationType').value,
+          primaryCrop: document.getElementById('reg-primaryCrop').value.trim()
+        };
+
+        try {
+          const user = await AUTH.register(payload);
+          UI.showToast('Registration successful! Redirecting to your dashboard...', 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 800);
+        } catch (err) {
+          console.error('Registration error:', err);
+          UI.showToast(err.message || 'Registration failed. Check details.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = `<i class="bi bi-check-circle me-1"></i>Create Farmer Account`;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

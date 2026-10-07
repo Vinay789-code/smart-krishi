@@ -1,0 +1,23 @@
+# Java / Maven
+backend/target/
+*.class
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.classpath
+.project
+.settings/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Project archive
+smart-krishi.zip

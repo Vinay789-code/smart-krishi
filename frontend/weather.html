@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Weather & Smart Irrigation | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-4">
+    <div class="container">
+      <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-semibold mb-2">Module 3 • Real-Time Agro-Meteorology</span>
+        <h2 class="display-6 fw-bold text-dark">Live Weather & Smart Irrigation</h2>
+        <p class="text-muted">Real-time open meteorological telemetry and precision irrigation scheduling based on live temperature, humidity, rainfall, and evapotranspiration.</p>
+      </div>
+
+      <!-- Search & Controls Bar -->
+      <div class="card p-3 rounded-3 shadow-sm border mb-4 bg-white">
+        <form id="weather-search-form" class="row g-2 align-items-center mb-2">
+          <div class="col-lg-7 col-md-6 col-12">
+            <div class="input-group">
+              <span class="input-group-text bg-white"><i class="bi bi-geo-alt text-danger"></i></span>
+              <input type="text" id="weather-search-input" class="form-control" placeholder="Search city or farming district (e.g. Jaipur, Delhi, Mumbai, Pune, Kota)" required>
+            </div>
+          </div>
+          <div class="col-lg-3 col-md-3 col-6">
+            <button type="submit" id="btn-weather-search" class="btn btn-agro-primary w-100">
+              <i class="bi bi-search me-1"></i>Search Location
+            </button>
+          </div>
+          <div class="col-lg-2 col-md-3 col-6">
+            <button type="button" id="btn-use-location" class="btn btn-outline-success w-100" onclick="useMyLocation()">
+              <i class="bi bi-crosshair me-1"></i>Use My Location
+            </button>
+          </div>
+        </form>
+
+        <div class="d-flex align-items-center gap-2 flex-wrap pt-2 border-top">
+          <span class="small text-muted fw-semibold">Quick Search Farming Hubs:</span>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Jaipur')">Jaipur</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Delhi')">Delhi</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Mumbai')">Mumbai</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Pune')">Pune</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Kota')">Kota</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Bengaluru')">Bengaluru</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Ludhiana')">Ludhiana</button>
+          <button type="button" class="btn btn-sm btn-light border rounded-pill" onclick="searchChip('Nashik')">Nashik</button>
+        </div>
+      </div>
+
+      <!-- Error Message Container (shown if location not found or service fails) -->
+      <div id="weather-error-box" class="alert alert-danger d-none p-3 rounded-3 shadow-sm border mb-4">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill fs-4 text-danger"></i>
+          <div>
+            <strong>Live weather temporarily unavailable:</strong>
+            <span id="weather-error-message">Location not found. Please verify spelling or try another city.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Current Weather Display -->
+      <div id="weather-content-section">
+        <div class="weather-hero-card mb-4 shadow">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold">
+                  <i class="bi bi-broadcast me-1"></i>LIVE WEATHER
+                </span>
+                <span class="badge bg-white text-dark px-3 py-2 rounded-pill fw-semibold">
+                  <i class="bi bi-geo-alt-fill text-danger me-1"></i><span id="weather-city-name">Loading Location...</span>
+                </span>
+                <span class="badge bg-white bg-opacity-25 text-white" id="weather-coords-tag">
+                  Lat: --, Lon: --
+                </span>
+              </div>
+              <div class="d-flex align-items-baseline gap-3">
+                <div class="display-3 fw-bold mb-0" id="weather-temp">--°C</div>
+                <div class="fs-5 text-white-50" id="weather-feels-like">Feels like --°C</div>
+              </div>
+              <div class="fs-4 fw-semibold text-white mt-1 mb-2" id="weather-condition">Checking live telemetry...</div>
+              <div class="small text-white-75" id="weather-updated-time">
+                <i class="bi bi-clock-history me-1"></i>Updated: --
+              </div>
+            </div>
+            <div class="col-lg-5">
+              <div class="d-flex align-items-center justify-content-lg-end gap-3 text-center">
+                <i id="weather-main-icon" class="bi bi-cloud-sun display-1 text-warning"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="row g-3 mt-4 pt-3 border-top border-white border-opacity-25">
+            <div class="col-md-3 col-6">
+              <div class="text-white-50 small">Relative Humidity</div>
+              <div class="fs-5 fw-bold" id="weather-humidity">--%</div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="text-white-50 small">Wind Velocity</div>
+              <div class="fs-5 fw-bold" id="weather-wind">-- km/h</div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="text-white-50 small">Rain / Precipitation</div>
+              <div class="fs-5 fw-bold" id="weather-rain">-- mm</div>
+            </div>
+            <div class="col-md-3 col-6">
+              <div class="text-white-50 small">Cloud Cover</div>
+              <div class="fs-5 fw-bold" id="weather-cloud">--%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Irrigation Recommendation Banner -->
+        <h5 class="fw-bold text-dark mb-2"><i class="bi bi-droplet-half text-primary me-2"></i>Smart Agronomic Irrigation Guidance</h5>
+        <div id="irrigation-advice-card" class="alert alert-success p-3 rounded-3 shadow-sm border mb-4">
+          <div class="d-flex align-items-center gap-2">
+            <span class="loading-spinner"></span>
+            <span>Computing live soil moisture & evapotranspiration advice...</span>
+          </div>
+        </div>
+
+        <!-- 5-Day Daily Forecast Section -->
+        <div class="card p-4 rounded-3 shadow-sm border bg-white mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-week me-2 text-success"></i>5-Day Agricultural Forecast</h5>
+            <span class="small text-muted">Powered by Open-Meteo</span>
+          </div>
+          <div class="row row-cols-2 row-cols-md-5 g-3" id="weather-forecast-container">
+            <!-- Populated by weather.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/weather.js"></script>
+</body>
+</html>
