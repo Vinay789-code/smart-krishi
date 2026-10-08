@@ -12,7 +12,7 @@ const UI = {
 
     navContainer.innerHTML = `
       <nav class="navbar navbar-expand-lg smart-navbar">
-        <div class="container">
+        <div class="container-fluid px-lg-4">
           <a class="navbar-brand" href="index.html">
             <span class="brand-icon"><i class="bi bi-flower1"></i></span>
             <span>Smart<span style="color: var(--primary-light);">Krishi</span></span>
@@ -22,14 +22,13 @@ const UI = {
           </button>
 
           <div class="collapse navbar-collapse" id="smartNavMenu">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3">
-              <li class="nav-item">
-                <a class="nav-link ${activePage === 'home' ? 'active' : ''}" href="index.html">Home</a>
-              </li>
-              ${isAuth ? `
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-2">
               <li class="nav-item">
                 <a class="nav-link ${activePage === 'dashboard' ? 'active' : ''}" href="dashboard.html">Dashboard</a>
-              </li>` : ''}
+              </li>
+              <li class="nav-item">
+                <a class="nav-link ${activePage === 'profile' ? 'active' : ''}" href="profile.html">Farmer & Land Management</a>
+              </li>
               <li class="nav-item">
                 <a class="nav-link ${activePage === 'crops' ? 'active' : ''}" href="crop-recommendation.html">Crop Recommendation</a>
               </li>
@@ -37,21 +36,19 @@ const UI = {
                 <a class="nav-link ${activePage === 'weather' ? 'active' : ''}" href="weather.html">Weather & Irrigation</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link ${activePage === 'market' ? 'active' : ''}" href="market-prices.html">Market Prices</a>
+                <a class="nav-link ${activePage === 'fertilizer' ? 'active' : ''}" href="fertilizer.html">Fertilizer Recommendation</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link ${activePage === 'advisory' ? 'active' : ''}" href="advisory.html">Advisory & Schemes</a>
+                <a class="nav-link ${activePage === 'profit' ? 'active' : ''}" href="profit-calculator.html">Profit / ROI Calculator</a>
               </li>
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle ${['fertilizer', 'profit', 'crop-calendar', 'price-prediction'].includes(activePage) ? 'active' : ''}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                  <i class="bi bi-grid-3x3-gap-fill me-1 text-success"></i>Smart Tools
-                </a>
-                <ul class="dropdown-menu shadow-sm">
-                  <li><a class="dropdown-item ${activePage === 'fertilizer' ? 'active' : ''}" href="fertilizer.html"><i class="bi bi-droplet-half text-success me-2"></i>Fertilizer Advisor</a></li>
-                  <li><a class="dropdown-item ${activePage === 'profit' ? 'active' : ''}" href="profit-calculator.html"><i class="bi bi-calculator text-primary me-2"></i>Crop Profit / ROI</a></li>
-                  <li><a class="dropdown-item ${activePage === 'crop-calendar' ? 'active' : ''}" href="crop-calendar.html"><i class="bi bi-calendar3 text-warning me-2"></i>Crop Calendar</a></li>
-                  <li><a class="dropdown-item ${activePage === 'price-prediction' ? 'active' : ''}" href="price-prediction.html"><i class="bi bi-graph-up-arrow text-danger me-2"></i>Price Trend & Prediction</a></li>
-                </ul>
+              <li class="nav-item">
+                <a class="nav-link ${activePage === 'crop-calendar' ? 'active' : ''}" href="crop-calendar.html">Crop Calendar & Advisory</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link ${activePage === 'price-prediction' ? 'active' : ''}" href="price-prediction.html">Price Prediction</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link ${activePage === 'market' ? 'active' : ''}" href="market-prices.html">Mandi Prices & Nearby Mandis</a>
               </li>
               ${isAdmin ? `
               <li class="nav-item">
@@ -73,7 +70,7 @@ const UI = {
                   <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                     <li><h6 class="dropdown-header">${user.email} (${isAdmin ? 'Admin' : 'Farmer'})</h6></li>
                     <li><a class="dropdown-item" href="dashboard.html"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
-                    <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person-lines-fill me-2"></i>Farm Profile</a></li>
+                    <li><a class="dropdown-item" href="profile.html"><i class="bi bi-person-lines-fill me-2"></i>Farmer & Land Management</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="AUTH.logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                   </ul>
@@ -116,20 +113,20 @@ const UI = {
               <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
                 <li><a href="crop-recommendation.html">Crop Recommendation</a></li>
                 <li><a href="weather.html">Weather & Irrigation</a></li>
-                <li><a href="market-prices.html">APMC Mandi Rates</a></li>
-                <li><a href="advisory.html">Govt Schemes & Tips</a></li>
-                <li><a href="fertilizer.html">Fertilizer Advisor</a></li>
-                <li><a href="profit-calculator.html">ROI Calculator</a></li>
-                <li><a href="crop-calendar.html">Crop Calendar</a></li>
+                <li><a href="fertilizer.html">Fertilizer Recommendation</a></li>
+                <li><a href="profit-calculator.html">Profit / ROI Calculator</a></li>
+                <li><a href="crop-calendar.html">Crop Calendar & Advisory</a></li>
                 <li><a href="price-prediction.html">Price Prediction</a></li>
+                <li><a href="market-prices.html">Mandi Prices & Nearby Mandis</a></li>
+                <li><a href="advisory.html">Govt Schemes & Tips</a></li>
               </ul>
             </div>
 
             <div class="col-lg-2 col-md-3 col-6">
               <h6 class="fw-bold text-dark mb-3">Farmer Portal</h6>
               <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
-                <li><a href="dashboard.html">Farmer Dashboard</a></li>
-                <li><a href="profile.html">Land & Farm Profile</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="profile.html">Farmer & Land Management</a></li>
                 <li><a href="login.html">Sign In</a></li>
                 <li><a href="register.html">Farmer Registration</a></li>
                 <li><a href="admin.html">Admin Portal</a></li>
