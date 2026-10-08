@@ -6,13 +6,11 @@ import com.smartkrishi.dto.WeatherResponse;
 import com.smartkrishi.exception.BadRequestException;
 import com.smartkrishi.exception.ResourceNotFoundException;
 import com.smartkrishi.service.CropRecommendationService;
-import com.smartkrishi.service.DiseaseDetectionService;
 import com.smartkrishi.service.WeatherService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,18 +24,30 @@ class SmartKrishiApplicationTests {
     private WeatherService weatherService;
 
     @Autowired
-    private DiseaseDetectionService diseaseDetectionService;
+    private com.smartkrishi.service.MandiService mandiService;
 
     @Autowired
-    private com.smartkrishi.service.MandiService mandiService;
+    private com.smartkrishi.service.FertilizerService fertilizerService;
+
+    @Autowired
+    private com.smartkrishi.service.ProfitCalculatorService profitCalculatorService;
+
+    @Autowired
+    private com.smartkrishi.service.CropCalendarService cropCalendarService;
+
+    @Autowired
+    private com.smartkrishi.service.PricePredictionService pricePredictionService;
 
     @Test
     @DisplayName("Application context loads successfully")
     void contextLoads() {
         assertNotNull(cropRecommendationService);
         assertNotNull(weatherService);
-        assertNotNull(diseaseDetectionService);
         assertNotNull(mandiService);
+        assertNotNull(fertilizerService);
+        assertNotNull(profitCalculatorService);
+        assertNotNull(cropCalendarService);
+        assertNotNull(pricePredictionService);
     }
 
     @Test
@@ -111,41 +121,6 @@ class SmartKrishiApplicationTests {
     }
 
     @Test
-    @DisplayName("Disease Detection rejects empty or non-image files with BadRequestException")
-    void testDiseaseDetectionValidation() {
-        // Empty file
-        MockMultipartFile emptyFile = new MockMultipartFile("file", "empty.jpg", "image/jpeg", new byte[0]);
-        assertThrows(BadRequestException.class, () -> {
-            diseaseDetectionService.analyze(emptyFile, null, null);
-        });
-
-        // Non-image file
-        MockMultipartFile textFile = new MockMultipartFile("file", "test.txt", "text/plain", "not an image".getBytes());
-        assertThrows(BadRequestException.class, () -> {
-            diseaseDetectionService.analyze(textFile, null, null);
-        });
-    }
-
-    @Test
-    @DisplayName("Disease Detection throws exact AI auth error when AI_API_KEY is not configured")
-    void testDiseaseDetectionUnauthenticatedError() {
-        MockMultipartFile validImage = new MockMultipartFile("file", "leaf.jpg", "image/jpeg", new byte[]{ (byte) 0xFF, (byte) 0xD8, (byte) 0xFF });
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
-            diseaseDetectionService.analyze(validImage, null, null);
-        });
-        assertTrue(ex.getMessage().contains("AI service authentication failed. Please verify AI_API_KEY."),
-                "Expected exact error message, got: " + ex.getMessage());
-    }
-
-    @Test
-    @DisplayName("Disease records retrieval returns empty list for new user without error")
-    void testDiseaseHistoryEmpty() {
-        var records = diseaseDetectionService.getUserRecords(99999L);
-        assertNotNull(records);
-        assertTrue(records.isEmpty());
-    }
-
-    @Test
     @DisplayName("Nearby Mandi Service retrieves Muhana Mandi within 50km for Jaipur coordinates")
     void testNearbyMandiPricesJaipur() {
         // Jaipur coordinates: 26.9124, 75.7873
@@ -207,5 +182,173 @@ class SmartKrishiApplicationTests {
         assertEquals("Wheat", first.getCommodity());
         assertEquals("Rajasthan", first.getState());
         assertEquals("Jaipur", first.getDistrict());
+    }
+
+    // ===================================================================
+    // MODULE 1: SMART FERTILIZER RECOMMENDATION TESTS
+    // ===================================================================
+
+    @Test
+    @DisplayName("Fertilizer Service calculates balanced ICAR dosages and split schedule for Wheat")
+    void testFertilizerRecommendationBalanced() {
+        var req = new com.smartkrishi.dto.FertilizerRecommendRequest();
+        req.setCrop("Wheat");
+        req.setSoilType("Alluvial Loam");
+        req.setGrowthStage("Sowing / Basal");
+        req.setLandArea(2.0);
+        req.setNitrogen(180.0);
+        req.setPhosphorus(18.0);
+        req.setPotassium(140.0);
+        req.setPh(7.0);
+
+        var resp = fertilizerService.recommendFertilizer(req);
+        assertNotNull(resp);
+        assertEquals("Wheat", resp.getCrop());
+        assertEquals("Alluvial Loam", resp.getSoilType());
+        assertNotNull(resp.getFertilizers());
+        assertFalse(resp.getFertilizers().isEmpty());
+
+        boolean hasUrea = resp.getFertilizers().stream().anyMatch(f -> f.getName().contains("Urea"));
+        boolean hasDapOrSsp = resp.getFertilizers().stream().anyMatch(f -> f.getName().contains("DAP") || f.getName().contains("SSP"));
+        assertTrue(hasUrea, "Expected Urea recommendation for Nitrogen deficit");
+        assertTrue(hasDapOrSsp, "Expected DAP or SSP recommendation for Phosphorus deficit");
+
+        assertTrue(resp.getApproximateTotalCost() > 0);
+        assertNotNull(resp.getSplitSchedule());
+        assertFalse(resp.getSplitSchedule().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Fertilizer Service provides soil amendments for acidic and alkaline pH")
+    void testFertilizerAcidicAndAlkalineSoilWarnings() {
+        // Acidic soil test (pH 5.2)
+        var acidicReq = new com.smartkrishi.dto.FertilizerRecommendRequest();
+        acidicReq.setCrop("Tomato");
+        acidicReq.setSoilType("Red Sandy Loam");
+        acidicReq.setGrowthStage("Sowing / Basal");
+        acidicReq.setLandArea(1.0);
+        acidicReq.setNitrogen(150.0);
+        acidicReq.setPhosphorus(20.0);
+        acidicReq.setPotassium(120.0);
+        acidicReq.setPh(5.2);
+
+        var acidicResp = fertilizerService.recommendFertilizer(acidicReq);
+        assertNotNull(acidicResp);
+        assertEquals("ACIDIC", acidicResp.getPhStatus());
+        boolean hasLimeAdvice = acidicResp.getPrecautions().stream()
+                .anyMatch(p -> p.toLowerCase().contains("lime") || p.toLowerCase().contains("neutralize"));
+        assertTrue(hasLimeAdvice, "Expected agricultural lime recommendation for acidic soil");
+
+        // Alkaline soil test (pH 8.8)
+        var alkalineReq = new com.smartkrishi.dto.FertilizerRecommendRequest();
+        alkalineReq.setCrop("Cotton");
+        alkalineReq.setSoilType("Black Clay (Regur)");
+        alkalineReq.setGrowthStage("Vegetative");
+        alkalineReq.setLandArea(2.0);
+        alkalineReq.setNitrogen(140.0);
+        alkalineReq.setPhosphorus(25.0);
+        alkalineReq.setPotassium(180.0);
+        alkalineReq.setPh(8.8);
+
+        var alkalineResp = fertilizerService.recommendFertilizer(alkalineReq);
+        assertNotNull(alkalineResp);
+        assertTrue(alkalineResp.getPhStatus().contains("ALKALINE") || alkalineResp.getPhStatus().contains("SODIC"));
+        boolean hasGypsumAdvice = alkalineResp.getPrecautions().stream()
+                .anyMatch(p -> p.toLowerCase().contains("gypsum"));
+        assertTrue(hasGypsumAdvice, "Expected gypsum amendment advice for alkaline soil");
+    }
+
+    // ===================================================================
+    // MODULE 2: CROP PROFIT / ROI CALCULATOR TESTS
+    // ===================================================================
+
+    @Test
+    @DisplayName("Profit Calculator accurately calculates revenue, cost, net margin, ROI, and break-even price")
+    void testProfitCalculatorEconomics() {
+        var req = new com.smartkrishi.dto.ProfitCalculationRequest();
+        req.setCropName("Wheat");
+        req.setLandAreaAcres(2.0);
+        req.setExpectedYieldPerAcreQuintals(20.0);
+        req.setExpectedSellingPricePerQuintal(2500.0);
+        req.setSeedCost(3000.0);
+        req.setFertilizerCost(6000.0);
+        req.setPesticideCost(2000.0);
+        req.setLaborCost(8000.0);
+        req.setIrrigationCost(3000.0);
+        req.setMachineryCost(5000.0);
+        req.setOtherCost(3000.0);
+
+        var resp = profitCalculatorService.calculateProfit(req);
+        assertNotNull(resp);
+        assertEquals("Wheat", resp.getCropName());
+        assertEquals(40.0, resp.getTotalYieldQuintals(), 0.001);
+        assertEquals(100000.0, resp.getGrossRevenue(), 0.001);
+        assertEquals(30000.0, resp.getTotalCost(), 0.001);
+        assertEquals(70000.0, resp.getNetProfit(), 0.001);
+        assertEquals(35000.0, resp.getProfitPerAcre(), 0.001);
+        assertEquals(233.33, resp.getRoiPercentage(), 0.1);
+        assertEquals(750.0, resp.getBreakEvenPricePerQuintal(), 0.001);
+        assertEquals("EXCELLENT", resp.getFinancialHealthRating());
+        assertNotNull(resp.getCostBreakdownPercentages());
+        assertEquals(7, resp.getCostBreakdownPercentages().size());
+    }
+
+    // ===================================================================
+    // MODULE 3: CROP GROWTH CALENDAR TESTS
+    // ===================================================================
+
+    @Test
+    @DisplayName("Crop Calendar retrieves structured 6 phenological stages and state notice for Wheat")
+    void testCropCalendarStagesAndStateAdvisory() {
+        var calendar = cropCalendarService.getCalendar("Wheat", "Rajasthan");
+        assertNotNull(calendar);
+        assertEquals("Wheat", calendar.getCrop());
+        assertEquals("Rabi", calendar.getSeason());
+        assertTrue(calendar.getDurationDays() >= 120);
+        assertNotNull(calendar.getStages());
+        assertEquals(6, calendar.getStages().size());
+
+        // Check stages sequence
+        assertEquals("Sowing & Basal Nutrition", calendar.getStages().get(0).getStageName());
+        assertEquals("Harvesting & Storage", calendar.getStages().get(5).getStageName());
+        assertNotNull(calendar.getStateSpecificNotice());
+        assertTrue(calendar.getStateSpecificNotice().contains("Rajasthan"));
+
+        // Fallback for unknown crop
+        var genericCal = cropCalendarService.getCalendar("UnknownExoticBerry", null);
+        assertNotNull(genericCal);
+        assertFalse(genericCal.getStages().isEmpty());
+    }
+
+    // ===================================================================
+    // MODULE 4: CROP PRICE PREDICTION TESTS
+    // ===================================================================
+
+    @Test
+    @DisplayName("Price Prediction computes moving average, momentum trend, and confidence with >=3 historical points")
+    void testPricePredictionSuccessWithHistoricalRecords() {
+        var resp = pricePredictionService.predictPrice("Wheat", null, null, 10);
+        assertNotNull(resp);
+        assertEquals("SUCCESS", resp.getStatus());
+        assertEquals("Wheat", resp.getCrop());
+        assertTrue(resp.getCurrentPrice() > 0);
+        assertTrue(resp.getPredictedPrice() > 0);
+        assertTrue(resp.getMovingAverage() > 0);
+        assertTrue(resp.getConfidenceScore() >= 50.0);
+        assertNotNull(resp.getTrend());
+        assertNotNull(resp.getHistoricalPoints());
+        assertTrue(resp.getHistoricalPoints().size() >= 3, "Expected at least 3 historical points for Wheat");
+        assertNotNull(resp.getMethodology());
+        assertNotNull(resp.getDisclaimer());
+    }
+
+    @Test
+    @DisplayName("Price Prediction gracefully returns INSUFFICIENT_DATA when records < 3 without throwing error")
+    void testPricePredictionInsufficientDataForRareFilter() {
+        var resp = pricePredictionService.predictPrice("DragonFruitExotic", null, null, 10);
+        assertNotNull(resp);
+        assertEquals("INSUFFICIENT_DATA", resp.getStatus());
+        assertNotNull(resp.getMessage());
+        assertTrue(resp.getMessage().contains("minimum 3 required") || resp.getMessage().contains("Found 0"));
     }
 }

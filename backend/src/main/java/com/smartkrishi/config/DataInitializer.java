@@ -80,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
     private void seedMarketPrices() {
         if (marketPriceRepository.count() == 0) {
             LocalDate today = LocalDate.now();
-            List<MarketPrice> prices = Arrays.asList(
+            java.util.List<MarketPrice> prices = new java.util.ArrayList<>(Arrays.asList(
                 new MarketPrice("Wheat", "Sharbati (Grade A)", "Indore APMC", "Indore", "Madhya Pradesh", 2550.0, 2900.0, 2750.0, "₹/Quintal", today, "RISING"),
                 new MarketPrice("Wheat", "Lokwan", "Nashik Market Yard", "Nashik", "Maharashtra", 2300.0, 2600.0, 2480.0, "₹/Quintal", today, "STABLE"),
                 new MarketPrice("Paddy (Rice)", "Basmati 1121", "Karnal Grain Mandi", "Karnal", "Haryana", 3800.0, 4400.0, 4150.0, "₹/Quintal", today, "RISING"),
@@ -104,10 +104,39 @@ public class DataInitializer implements CommandLineRunner {
                 new MarketPrice("Mustard", "Yellow Mustard", "Bassi Mandi", "Jaipur", "Rajasthan", 5200.0, 5750.0, 5500.0, "₹/Quintal", today, "RISING"),
                 new MarketPrice("Bajra", "Hybrid Pearl Millet", "Kotputli Mandi", "Jaipur", "Rajasthan", 1850.0, 2200.0, 2050.0, "₹/Quintal", today, "STABLE"),
                 new MarketPrice("Soybean", "Yellow Bold", "Kota Mandi", "Kota", "Rajasthan", 4350.0, 4800.0, 4600.0, "₹/Quintal", today, "RISING"),
-                new MarketPrice("Onion", "Red Medium", "Alwar APMC", "Alwar", "Rajasthan", 1500.0, 2150.0, 1800.0, "₹/Quintal", today, "STABLE")
-            );
+                new MarketPrice("Onion", "Red Medium", "Alwar APMC", "Alwar", "Rajasthan", 1500.0, 2150.0, 1800.0, "₹/Quintal", today, "STABLE"),
+
+                // Historical time-series points (7, 14, 21 days ago) for statistical prediction validation
+                // Wheat historical
+                new MarketPrice("Wheat", "Sharbati (Grade A)", "Indore APMC", "Indore", "Madhya Pradesh", 2400.0, 2700.0, 2580.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Wheat", "Sharbati (Grade A)", "Indore APMC", "Indore", "Madhya Pradesh", 2450.0, 2750.0, 2630.0, "₹/Quintal", today.minusDays(14), "RISING"),
+                new MarketPrice("Wheat", "Sharbati (Grade A)", "Indore APMC", "Indore", "Madhya Pradesh", 2500.0, 2820.0, 2690.0, "₹/Quintal", today.minusDays(7), "RISING"),
+                new MarketPrice("Wheat", "Lokwan / Sharbati", "Chomu Mandi", "Jaipur", "Rajasthan", 2320.0, 2600.0, 2460.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Wheat", "Lokwan / Sharbati", "Chomu Mandi", "Jaipur", "Rajasthan", 2350.0, 2650.0, 2500.0, "₹/Quintal", today.minusDays(14), "RISING"),
+                new MarketPrice("Wheat", "Lokwan / Sharbati", "Chomu Mandi", "Jaipur", "Rajasthan", 2380.0, 2700.0, 2540.0, "₹/Quintal", today.minusDays(7), "RISING"),
+
+                // Tomato historical
+                new MarketPrice("Tomato", "Hybrid Deshi", "Muhana Mandi", "Jaipur", "Rajasthan", 1600.0, 2400.0, 2050.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Tomato", "Hybrid Deshi", "Muhana Mandi", "Jaipur", "Rajasthan", 1750.0, 2650.0, 2250.0, "₹/Quintal", today.minusDays(14), "RISING"),
+                new MarketPrice("Tomato", "Hybrid Deshi", "Muhana Mandi", "Jaipur", "Rajasthan", 1900.0, 2900.0, 2450.0, "₹/Quintal", today.minusDays(7), "RISING"),
+
+                // Onion historical (declining trend)
+                new MarketPrice("Onion", "Nashik Red", "Lasalgaon Mandi", "Nashik", "Maharashtra", 1800.0, 2600.0, 2250.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Onion", "Nashik Red", "Lasalgaon Mandi", "Nashik", "Maharashtra", 1650.0, 2400.0, 2050.0, "₹/Quintal", today.minusDays(14), "FALLING"),
+                new MarketPrice("Onion", "Nashik Red", "Lasalgaon Mandi", "Nashik", "Maharashtra", 1500.0, 2250.0, 1920.0, "₹/Quintal", today.minusDays(7), "FALLING"),
+
+                // Mustard historical
+                new MarketPrice("Mustard", "Black Mustard", "Bharatpur Mandi", "Bharatpur", "Rajasthan", 4900.0, 5350.0, 5150.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Mustard", "Black Mustard", "Bharatpur Mandi", "Bharatpur", "Rajasthan", 5000.0, 5450.0, 5260.0, "₹/Quintal", today.minusDays(14), "RISING"),
+                new MarketPrice("Mustard", "Black Mustard", "Bharatpur Mandi", "Bharatpur", "Rajasthan", 5050.0, 5550.0, 5340.0, "₹/Quintal", today.minusDays(7), "RISING"),
+
+                // Soybean historical (stable trend)
+                new MarketPrice("Soybean", "Yellow Bold", "Ujjain Mandi", "Ujjain", "Madhya Pradesh", 4450.0, 4820.0, 4640.0, "₹/Quintal", today.minusDays(21), "STABLE"),
+                new MarketPrice("Soybean", "Yellow Bold", "Ujjain Mandi", "Ujjain", "Madhya Pradesh", 4420.0, 4840.0, 4630.0, "₹/Quintal", today.minusDays(14), "STABLE"),
+                new MarketPrice("Soybean", "Yellow Bold", "Ujjain Mandi", "Ujjain", "Madhya Pradesh", 4410.0, 4860.0, 4650.0, "₹/Quintal", today.minusDays(7), "STABLE")
+            ));
             marketPriceRepository.saveAll(prices);
-            logger.info("Seeded initial market prices ({} records)", prices.size());
+            logger.info("Seeded initial market prices with historical depth ({} records)", prices.size());
         }
     }
 

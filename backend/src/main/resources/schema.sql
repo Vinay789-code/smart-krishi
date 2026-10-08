@@ -1,7 +1,6 @@
 -- Smart Krishi Database Schema
 -- Production MySQL 8.0+ compatible
 
-DROP TABLE IF EXISTS disease_records;
 DROP TABLE IF EXISTS crop_recommendations;
 DROP TABLE IF EXISTS farms;
 DROP TABLE IF EXISTS farmer_profiles;
@@ -69,22 +68,6 @@ CREATE TABLE crop_recommendations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_crop_rec_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
     INDEX idx_rec_crop (recommended_crop)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE TABLE disease_records (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT,
-    crop_name VARCHAR(100),
-    image_url VARCHAR(500),
-    image_name VARCHAR(255),
-    detected_disease VARCHAR(150) NOT NULL,
-    confidence_score DOUBLE,
-    symptoms TEXT,
-    treatment TEXT,
-    prevention TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_disease_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-    INDEX idx_disease_crop (crop_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE market_prices (

@@ -5,11 +5,9 @@ import java.util.List;
 public class AdminStatsDto {
     private long totalFarmers;
     private long totalRecommendations;
-    private long totalDiseaseAnalyses;
     private long totalMarketRecords;
     private long totalAdvisories;
     private List<CropRecommendationResponse> recentRecommendations;
-    private List<DiseaseAnalysisResponse> recentDiseases;
 
     public AdminStatsDto() {}
 
@@ -19,9 +17,6 @@ public class AdminStatsDto {
     public long getTotalRecommendations() { return totalRecommendations; }
     public void setTotalRecommendations(long totalRecommendations) { this.totalRecommendations = totalRecommendations; }
 
-    public long getTotalDiseaseAnalyses() { return totalDiseaseAnalyses; }
-    public void setTotalDiseaseAnalyses(long totalDiseaseAnalyses) { this.totalDiseaseAnalyses = totalDiseaseAnalyses; }
-
     public long getTotalMarketRecords() { return totalMarketRecords; }
     public void setTotalMarketRecords(long totalMarketRecords) { this.totalMarketRecords = totalMarketRecords; }
 
@@ -30,7 +25,4 @@ public class AdminStatsDto {
 
     public List<CropRecommendationResponse> getRecentRecommendations() { return recentRecommendations; }
     public void setRecentRecommendations(List<CropRecommendationResponse> recentRecommendations) { this.recentRecommendations = recentRecommendations; }
-
-    public List<DiseaseAnalysisResponse> getRecentDiseases() { return recentDiseases; }
-    public void setRecentDiseases(List<DiseaseAnalysisResponse> recentDiseases) { this.recentDiseases = recentDiseases; }
 }

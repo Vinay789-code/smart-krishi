@@ -60,13 +60,16 @@ public class SecurityConfig {
                 // Public Weather & Irrigation endpoints
                 .requestMatchers("/api/weather/**").permitAll()
 
-                // Public Disease analysis
-                .requestMatchers(HttpMethod.POST, "/api/disease/analyze").permitAll()
-
                 // Public Market, Mandi & Advisory read endpoints
                 .requestMatchers(HttpMethod.GET, "/api/market/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/mandi/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/advisory/**").permitAll()
+
+                // Public Fertilizer Recommendation, Profit Calculator, Crop Calendar & Price Prediction
+                .requestMatchers(HttpMethod.POST, "/api/fertilizer/recommend").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/profit/calculate").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/crop-calendar/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/price-prediction/**").permitAll()
 
                 // H2 Database Console
                 .requestMatchers("/h2-console/**").permitAll()

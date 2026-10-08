@@ -50,16 +50,6 @@ async function loadDashboardData(user) {
   } catch (err) {
     console.warn('Dashboard recommendations error:', err);
   }
-
-  // 4. Load Farmer's Recent Disease Scans
-  try {
-    const diseaseRes = await API.get(`/api/farmers/${user.id}/diseases`);
-    if (diseaseRes && diseaseRes.data) {
-      renderRecentDiseases(diseaseRes.data);
-    }
-  } catch (err) {
-    console.warn('Dashboard disease scans error:', err);
-  }
 }
 
 function renderDashboardWeather(w) {
@@ -145,34 +135,6 @@ function renderRecentRecommendations(items) {
       <p class="small text-secondary mt-2 mb-2">${latest.cropDetails || ''}</p>
       <div class="small p-2 rounded bg-white border">
         <strong>Nutrients Tested:</strong> N: ${latest.nitrogen} | P: ${latest.phosphorus} | K: ${latest.potassium} | pH: ${latest.ph}
-      </div>
-    </div>
-  `;
-}
-
-function renderRecentDiseases(items) {
-  const container = document.getElementById('dash-recent-diseases');
-  if (!items || items.length === 0) {
-    container.innerHTML = `
-      <div class="text-center py-4 text-muted">
-        <i class="bi bi-shield-check fs-2 text-secondary mb-2 d-block"></i>
-        <p class="mb-2">No disease scans recorded.</p>
-        <a href="disease-detection.html" class="btn btn-sm btn-agro-outline">Check Crop Leaf</a>
-      </div>
-    `;
-    return;
-  }
-
-  const latest = items[0];
-  container.innerHTML = `
-    <div class="p-3 rounded border mb-2 bg-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <span class="badge bg-danger-subtle text-danger mb-1">${latest.cropName} Crop</span>
-          <h6 class="fw-bold mb-1">${latest.detectedDisease}</h6>
-          <div class="small text-muted">Confidence: ${(latest.confidenceScore || 90).toFixed(1)}%</div>
-        </div>
-        <a href="disease-detection.html" class="btn btn-sm btn-outline-secondary">View Advice</a>
       </div>
     </div>
   `;

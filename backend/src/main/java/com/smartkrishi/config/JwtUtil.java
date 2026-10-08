@@ -18,7 +18,7 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${JWT_SECRET:${smartkrishi.jwt.secret:smartKrishiSuperSecretKeyForJwtTokenAuth2026AgriculturalSystemKey}}")
+    @Value("${JWT_SECRET:${smartkrishi.jwt.secret}}")
     private String secret;
 
     @Value("${smartkrishi.jwt.expiration-ms:86400000}")

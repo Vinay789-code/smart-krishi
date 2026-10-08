@@ -5,7 +5,6 @@ import com.smartkrishi.entity.User;
 import com.smartkrishi.exception.UnauthorizedException;
 import com.smartkrishi.repository.UserRepository;
 import com.smartkrishi.service.CropRecommendationService;
-import com.smartkrishi.service.DiseaseDetectionService;
 import com.smartkrishi.service.FarmerService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,16 +21,13 @@ public class FarmerController {
 
     private final FarmerService farmerService;
     private final CropRecommendationService cropRecommendationService;
-    private final DiseaseDetectionService diseaseDetectionService;
     private final UserRepository userRepository;
 
     public FarmerController(FarmerService farmerService,
                             CropRecommendationService cropRecommendationService,
-                            DiseaseDetectionService diseaseDetectionService,
                             UserRepository userRepository) {
         this.farmerService = farmerService;
         this.cropRecommendationService = cropRecommendationService;
-        this.diseaseDetectionService = diseaseDetectionService;
         this.userRepository = userRepository;
     }
 
@@ -85,12 +81,5 @@ public class FarmerController {
         verifyFarmerAccess(id);
         List<CropRecommendationResponse> recs = cropRecommendationService.getUserRecommendations(id);
         return ResponseEntity.ok(ApiResponse.ok(recs));
-    }
-
-    @GetMapping("/{id}/diseases")
-    public ResponseEntity<ApiResponse<List<DiseaseAnalysisResponse>>> getFarmerDiseases(@PathVariable Long id) {
-        verifyFarmerAccess(id);
-        List<DiseaseAnalysisResponse> diseases = diseaseDetectionService.getUserRecords(id);
-        return ResponseEntity.ok(ApiResponse.ok(diseases));
     }
 }

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crop Profit & ROI Calculator | Smart Krishi – Precision Agriculture Platform</title>
+  <!-- Google Fonts Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar -->
+  <div id="navbar-container"></div>
+
+  <main class="py-4">
+    <div class="container">
+      <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill fw-semibold mb-2">
+          <i class="bi bi-currency-rupee me-1"></i>Farm Economics & ROI Analytics
+        </span>
+        <h2 class="display-6 fw-bold text-dark">Crop Profit & ROI Calculator</h2>
+        <p class="text-muted">
+          Plan your farm finances before sowing. Calculate total harvest output, input expense breakdowns, net earnings, ROI percentage, and your minimum break-even selling price.
+        </p>
+      </div>
+
+      <!-- Presets Bar -->
+      <div class="card p-3 rounded-3 shadow-sm border mb-4 bg-white">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="small fw-bold text-secondary"><i class="bi bi-magic text-primary me-1"></i>Sample Farm Budgets:</span>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyProfitPreset('wheat_2acres')">Rabi Wheat (2 Acres)</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyProfitPreset('tomato_1acre')">Hybrid Tomato (1 Acre)</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyProfitPreset('soybean_3acres')">Kharif Soybean (3 Acres)</button>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyProfitPreset('mustard_2acres')">Mustard (2 Acres)</button>
+          </div>
+          <div>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetProfitForm()">
+              <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Input Form -->
+        <div class="col-lg-5">
+          <div class="agro-card p-4">
+            <h5 class="fw-bold text-dark mb-3 border-bottom pb-2">
+              <i class="bi bi-receipt-cutoff me-2 text-primary"></i>Harvest & Cost Estimates
+            </h5>
+
+            <form id="profit-form">
+              <!-- Crop & Land Area -->
+              <div class="row g-2 mb-3">
+                <div class="col-md-7">
+                  <label for="prof-crop" class="form-label fw-semibold">Crop Name *</label>
+                  <select id="prof-crop" class="form-select" required>
+                    <option value="Wheat" selected>Wheat (गेहूं)</option>
+                    <option value="Tomato">Tomato (टमाटर)</option>
+                    <option value="Soybean">Soybean (सोयाबीन)</option>
+                    <option value="Mustard">Mustard (सरसों)</option>
+                    <option value="Cotton">Cotton (कपास)</option>
+                    <option value="Paddy (Rice)">Paddy / Rice (धान)</option>
+                    <option value="Potato">Potato (आलू)</option>
+                    <option value="Onion">Onion (प्याज)</option>
+                    <option value="Maize">Maize (मक्का)</option>
+                    <option value="Chickpea">Chickpea / Chana (चना)</option>
+                  </select>
+                </div>
+                <div class="col-md-5">
+                  <label for="prof-area" class="form-label fw-semibold">Land Area *</label>
+                  <div class="input-group">
+                    <input type="number" step="0.1" min="0.1" max="1000" id="prof-area" class="form-control" value="2.0" required>
+                    <span class="input-group-text">Acres</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Yield & Selling Price -->
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label for="prof-yield" class="form-label fw-semibold">Expected Yield *</label>
+                  <div class="input-group">
+                    <input type="number" step="0.5" min="0.5" id="prof-yield" class="form-control" value="20.0" required>
+                    <span class="input-group-text">Qtl/Acre</span>
+                  </div>
+                  <div class="form-text small">Quintals (1 Qtl = 100 kg)</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="prof-price" class="form-label fw-semibold">Mandi Price *</label>
+                  <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    <input type="number" step="10" min="100" id="prof-price" class="form-control" value="2550" required>
+                    <span class="input-group-text">/Qtl</span>
+                  </div>
+                  <div class="form-text small">Modal market rate</div>
+                </div>
+              </div>
+
+              <!-- Cost Breakdown -->
+              <div class="border rounded p-3 bg-light mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-bold small text-uppercase text-secondary">Operational Cost Breakdown (₹)</span>
+                  <span class="badge bg-secondary-subtle text-secondary small">Total for Farm</span>
+                </div>
+
+                <div class="row g-2 mb-2">
+                  <div class="col-6">
+                    <label for="prof-seed" class="form-label small mb-1">Seed & Treatment (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-seed" class="form-control form-control-sm" value="3500" required>
+                  </div>
+                  <div class="col-6">
+                    <label for="prof-fert" class="form-label small mb-1">Fertilizers & Manure (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-fert" class="form-control form-control-sm" value="6500" required>
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-2">
+                  <div class="col-6">
+                    <label for="prof-pest" class="form-label small mb-1">Pesticides & Sprays (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-pest" class="form-control form-control-sm" value="2400" required>
+                  </div>
+                  <div class="col-6">
+                    <label for="prof-labor" class="form-label small mb-1">Labor & Weeding (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-labor" class="form-control form-control-sm" value="8500" required>
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-2">
+                  <div class="col-6">
+                    <label for="prof-irrig" class="form-label small mb-1">Irrigation / Power (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-irrig" class="form-control form-control-sm" value="3200" required>
+                  </div>
+                  <div class="col-6">
+                    <label for="prof-mach" class="form-label small mb-1">Tractor & Tillage (₹)</label>
+                    <input type="number" min="0" step="50" id="prof-mach" class="form-control form-control-sm" value="5500" required>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="prof-other" class="form-label small mb-1">Transport, Mandi & Misc (₹)</label>
+                  <input type="number" min="0" step="50" id="prof-other" class="form-control form-control-sm" value="2500" required>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-calc-profit" class="btn btn-agro-primary w-100 py-2 fw-semibold">
+                <i class="bi bi-calculator me-1"></i>Calculate Profit & ROI
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Output Dashboard -->
+        <div class="col-lg-7">
+          <!-- Placeholder -->
+          <div id="prof-placeholder" class="agro-card p-5 text-center text-muted">
+            <div class="card-icon-box icon-blue mx-auto mb-3" style="width: 64px; height: 64px; font-size: 2rem;">
+              <i class="bi bi-cash-coin"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Economic Projections Ready</h5>
+            <p class="small max-w-500 mx-auto mb-4">
+              Enter your estimated yield, current mandi selling price, and field expenses on the left to calculate your net profit and break-even thresholds.
+            </p>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyProfitPreset('wheat_2acres')">
+              Load Sample Wheat Budget (2 Acres)
+            </button>
+          </div>
+
+          <!-- Loading Spinner -->
+          <div id="prof-loading" class="d-none agro-card p-5 text-center">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <h5 class="fw-bold text-dark">Calculating Agricultural Margins...</h5>
+            <p class="text-muted small">Computing net margins, return on capital, and break-even market price.</p>
+          </div>
+
+          <!-- Calculation Results -->
+          <div id="prof-results" class="d-none">
+            <!-- Headline Profit Card -->
+            <div class="agro-card p-4 mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                  <span id="prof-health-badge" class="badge bg-success px-3 py-1 fw-bold fs-6">EXCELLENT PROFITABILITY</span>
+                  <div class="small text-muted mt-1" id="prof-crop-title">Wheat Cultivation (2.0 Acres)</div>
+                </div>
+                <div class="text-end">
+                  <div class="small text-muted">Net Return on Investment</div>
+                  <div class="fs-4 fw-bold text-primary" id="prof-roi-val">+217.7%</div>
+                </div>
+              </div>
+
+              <!-- 4 Big Metric Blocks -->
+              <div class="row g-3 mb-3">
+                <div class="col-md-3 col-6">
+                  <div class="metric-summary-card text-center">
+                    <div class="small text-muted">Total Yield</div>
+                    <div class="metric-summary-val text-dark" id="prof-tot-yield">40</div>
+                    <div class="small text-secondary">Quintals</div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6">
+                  <div class="metric-summary-card text-center">
+                    <div class="small text-muted">Gross Revenue</div>
+                    <div class="metric-summary-val text-success" id="prof-tot-rev">₹ 1,02,000</div>
+                    <div class="small text-secondary">Market Value</div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6">
+                  <div class="metric-summary-card text-center">
+                    <div class="small text-muted">Total Cost</div>
+                    <div class="metric-summary-val text-danger" id="prof-tot-cost">₹ 32,100</div>
+                    <div class="small text-secondary">All Expenses</div>
+                  </div>
+                </div>
+                <div class="col-md-3 col-6">
+                  <div class="metric-summary-card text-center bg-success-subtle border-success-subtle">
+                    <div class="small text-success-emphasis fw-bold">Net Profit</div>
+                    <div class="metric-summary-val text-success" id="prof-net-profit">₹ 69,900</div>
+                    <div class="small text-success-emphasis" id="prof-per-acre">₹ 34,950 / Acre</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Break-Even Price Highlight -->
+              <div class="p-3 rounded-3 bg-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <div class="small text-muted">Minimum Break-Even Price:</div>
+                  <div class="fw-bold fs-5 text-dark" id="prof-breakeven">₹ 802.50 / Quintal</div>
+                </div>
+                <div class="text-end">
+                  <div class="small text-muted">Current Selling Price: <strong id="prof-selling-compare" class="text-success">₹ 2,550</strong></div>
+                  <div class="small text-success fw-bold" id="prof-margin-safety"><i class="bi bi-shield-check me-1"></i>Healthy Safety Margin (₹ 1,747.50 buffer)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cost Distribution & Visual Bars -->
+            <div class="agro-card p-4 mb-4">
+              <h5 class="fw-bold text-dark mb-3">
+                <i class="bi bi-pie-chart me-2 text-primary"></i>Input Cost Breakdown & Allocation
+              </h5>
+              <div id="cost-breakdown-container" class="d-flex flex-column gap-3">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- Agronomic Financial Advisory -->
+            <div class="agro-card p-4">
+              <h5 class="fw-bold text-dark mb-2">
+                <i class="bi bi-lightbulb me-2 text-warning"></i>Farm Economics Advisory
+              </h5>
+              <p class="text-secondary small mb-0" id="prof-advisory-text">
+                Your projected ROI is strong. Ensure proper pest monitoring to protect high expected yields.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Dynamic Footer -->
+  <div id="footer-container"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/profit-calculator.js"></script>
+</body>
+</html>

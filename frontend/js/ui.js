@@ -37,13 +37,21 @@ const UI = {
                 <a class="nav-link ${activePage === 'weather' ? 'active' : ''}" href="weather.html">Weather & Irrigation</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link ${activePage === 'disease' ? 'active' : ''}" href="disease-detection.html">Disease Detection</a>
-              </li>
-              <li class="nav-item">
                 <a class="nav-link ${activePage === 'market' ? 'active' : ''}" href="market-prices.html">Market Prices</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link ${activePage === 'advisory' ? 'active' : ''}" href="advisory.html">Advisory & Schemes</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle ${['fertilizer', 'profit', 'crop-calendar', 'price-prediction'].includes(activePage) ? 'active' : ''}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="bi bi-grid-3x3-gap-fill me-1 text-success"></i>Smart Tools
+                </a>
+                <ul class="dropdown-menu shadow-sm">
+                  <li><a class="dropdown-item ${activePage === 'fertilizer' ? 'active' : ''}" href="fertilizer.html"><i class="bi bi-droplet-half text-success me-2"></i>Fertilizer Advisor</a></li>
+                  <li><a class="dropdown-item ${activePage === 'profit' ? 'active' : ''}" href="profit-calculator.html"><i class="bi bi-calculator text-primary me-2"></i>Crop Profit / ROI</a></li>
+                  <li><a class="dropdown-item ${activePage === 'crop-calendar' ? 'active' : ''}" href="crop-calendar.html"><i class="bi bi-calendar3 text-warning me-2"></i>Crop Calendar</a></li>
+                  <li><a class="dropdown-item ${activePage === 'price-prediction' ? 'active' : ''}" href="price-prediction.html"><i class="bi bi-graph-up-arrow text-danger me-2"></i>Price Trend & Prediction</a></li>
+                </ul>
               </li>
               ${isAdmin ? `
               <li class="nav-item">
@@ -95,7 +103,7 @@ const UI = {
                 <span class="fw-bold fs-5 text-dark">Smart Krishi – Precision Agriculture Platform</span>
               </div>
               <p class="text-muted small mb-3">
-                Empowering Indian farmers with data-driven crop recommendations, hyper-local weather & smart irrigation advisories, AI leaf pathology detection, and transparent mandi market prices.
+                Empowering Indian farmers with data-driven crop recommendations, hyper-local weather & smart irrigation advisories, and transparent mandi market prices.
               </p>
               <div class="d-flex gap-2">
                 <span class="badge bg-success-subtle text-success border border-success-subtle"><i class="bi bi-shield-check me-1"></i>Production Ready</span>
@@ -108,9 +116,12 @@ const UI = {
               <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
                 <li><a href="crop-recommendation.html">Crop Recommendation</a></li>
                 <li><a href="weather.html">Weather & Irrigation</a></li>
-                <li><a href="disease-detection.html">Crop Disease Check</a></li>
                 <li><a href="market-prices.html">APMC Mandi Rates</a></li>
                 <li><a href="advisory.html">Govt Schemes & Tips</a></li>
+                <li><a href="fertilizer.html">Fertilizer Advisor</a></li>
+                <li><a href="profit-calculator.html">ROI Calculator</a></li>
+                <li><a href="crop-calendar.html">Crop Calendar</a></li>
+                <li><a href="price-prediction.html">Price Prediction</a></li>
               </ul>
             </div>
 

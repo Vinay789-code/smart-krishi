@@ -1,6 +1,6 @@
 # 🌾 Smart Krishi – Precision Agriculture Platform
 
-A modern, responsive precision agriculture platform designed for Indian farmers. Features precision crop recommendation, real-time live weather & precision irrigation guidance, deep learning leaf disease diagnostics, APMC mandi market prices, and government scheme advisories.
+A modern, responsive precision agriculture platform designed for Indian farmers. Features precision crop recommendation, real-time live weather & precision irrigation guidance, APMC mandi market prices, smart fertilizer calculation, crop profit / ROI estimation, crop growth calendars, price trend prediction, and government scheme advisories.
 
 ---
 
@@ -12,7 +12,6 @@ A modern, responsive precision agriculture platform designed for Indian farmers.
 | **Backend** | [Render](https://render.com) | Java 17, Spring Boot 3.3.4, Spring Data JPA, Spring Security, REST |
 | **Database** | Cloud MySQL (Aiven / TiDB / Railway) | MySQL 8.0+ (Auto-migrated via JPA & `schema.sql`) |
 | **Live Weather** | [Open-Meteo](https://open-meteo.com) | Live Open-Meteo Geocoding & Forecast APIs (100% Free, zero fake data) |
-| **AI Disease Detection** | [Hugging Face](https://huggingface.co) / Local ML | `linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification` or local Python microservice |
 | **Mandi Market Prices** | [data.gov.in](https://data.gov.in) / AGMARKNET | Ministry of Agriculture & Farmers Welfare API (`9ef84268-d588-465a-a308-a864a43d0070`) + Haversine APMC Registry |
 
 ---
@@ -37,67 +36,103 @@ Smart Krishi uses real-time, location-based meteorological telemetry. All simula
 5. **Accurate Error Handling**: If an invalid location is searched (e.g., `xxxxxxxx`), the backend returns a `404 Not Found` error. The UI displays an explicit error message instead of displaying simulated or fake weather.
 
 ---
-
-## 🌿 AI-Based Crop Disease Detection
-
-Crop disease diagnosis runs real-time computer vision inference on uploaded plant leaf images. Filename-based heuristics, random selections, and static demo guesses have been completely removed.
-
-### AI Model & Integration Architecture:
-```
-Farmer Leaf Upload (JPG/PNG/WebP <= 10MB)
-  ↓
-Spring Boot Backend (/api/disease/analyze)
-  ↓
-Hugging Face Serverless Inference Router (or Local Python ML Microservice)
-  ↓
-Plant Pathology Registry & Treatment Engine
-  ↓
-Frontend UI (Confidence Bar, Severity, Observed Symptoms, Organic & Chemical Remedies)
-```
-
-- **Cloud Inference (Option A - Default)**:
-  - **Endpoint Router**: `https://router.huggingface.co/hf-inference/models/linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification`
-  - **Model**: `linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification` (trained on PlantVillage benchmark dataset covering 38 disease & healthy classes across tomato, potato, corn, apple, grape, pepper, etc.)
-  - **Authorization**: `Bearer ${AI_API_KEY}` (Token stays strictly on backend; never exposed to browser)
-- **Local Microservice (Option B - Optional)**:
-  - Microservice included in `ml-service/app.py` running on `http://localhost:5000/predict`.
-  - Configured via `ML_SERVICE_URL=http://localhost:5000/predict`.
-
-### Configurable Confidence Threshold & Robust Error Handling:
-- **Confidence Threshold**: Configured via `AI_CONFIDENCE_THRESHOLD` (default **60.0%**).
-- **Low Confidence Diagnosis**: If model confidence < 60%, the system flags a low-confidence diagnosis advising the farmer to take a clearer, focused photo under natural daylight.
-- **Dedicated Error Card**: If an API error or network failure occurs, the UI displays a clear `#disease-error-card` with an exact error message and never gets stuck in a permanent scanning loop.
-- **Specific Error Messages Handled**:
-  - `401 / 403`: *"AI service authentication failed. Please verify AI_API_KEY."*
-  - `429`: *"AI service rate limit reached. Please try again later."*
-  - `503 / Loading`: *"AI disease detection model is currently loading. Please wait a few seconds and try again."*
-  - `Timeout`: *"AI disease detection timed out. Please try again."*
-  - `Malformed response`: *"AI service returned an unexpected response format."*
-  - `Empty prediction`: *"AI model returned no prediction. Please upload a clearer leaf image."*
-
-### Getting a Free Hugging Face Token:
-1. Create a free account at [huggingface.co](https://huggingface.co).
-2. Go to **Settings** → **Access Tokens** (`https://huggingface.co/settings/tokens`).
-3. Create a new token with **Read** permission.
-4. Set the environment variable:
-   ```bash
-   # Windows PowerShell
-   $env:AI_API_KEY="hf_your_token_here"
-   # Linux / Mac / Render Dashboard
-   export AI_API_KEY="hf_your_token_here"
-   ```
-
-### Farmer Disease History:
-- Authenticated farmers can view past scans via `GET /api/disease/records` (or `/api/disease/my-history`).
-- Admins can query all farm scans globally.
-
----
-
 ## 🌾 Nearby Live Mandi Prices & APMC Commodity Telemetry
 
 Smart Krishi provides Indian farmers with nearby agricultural market (APMC Mandi) rates, minimum/maximum/modal prices (₹/quintal), commodities, and turn-by-turn navigation.
 
-### Core Features:
+---
+
+## 🧪 4 New Precision Agriculture Modules
+
+### 1. Smart Fertilizer Recommendation (`POST /api/fertilizer/recommend`)
+- **Engine**: Rule-based agronomic nutrient balancing aligned with Indian Council of Agricultural Research (ICAR) guidelines.
+- **Inputs**: Target crop, soil classification (Alluvial, Black, Red, Clay, Sandy, Laterite), existing soil test nutrients (N, P, K in kg/ha, pH 3.0–11.0), land area (acres), and crop growth stage.
+- **Calculations**:
+  - Nutrient deficit against benchmark NPK targets.
+  - Fertilizer equivalent conversions into standard commercial bags (Urea 46% N, DAP 18:46:0, MOP 60% K2O, SSP 16% P2O5, Zinc Sulphate 21% Zn).
+  - Cost estimation based on subsidized Government MRP rates.
+  - Split application schedule (Basal application %, first top-dressing %, second top-dressing %).
+  - Soil pH correction advisories: recommends agricultural lime for acidic soils (pH < 6.0) and gypsum / organic matter for alkaline soils (pH > 8.0).
+- **Frontend**: `fertilizer.html` (`js/fertilizer.js`) with one-click test presets for Wheat, Paddy, Cotton, Tomato, and Mustard.
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/fertilizer/recommend \
+    -H "Content-Type: application/json" \
+    -d '{
+      "crop": "Wheat",
+      "soilType": "Alluvial Loam",
+      "growthStage": "Sowing / Basal",
+      "landArea": 2.0,
+      "nitrogen": 180.0,
+      "phosphorus": 18.0,
+      "potassium": 140.0,
+      "ph": 7.0
+    }'
+  ```
+
+### 2. Crop Profit & ROI Calculator (`POST /api/profit/calculate`)
+- **Engine**: Precision farm economics computing net profitability, return on capital, and break-even selling price before sowing.
+- **Inputs**: Crop name, cultivated area (acres), expected yield per acre (quintals), expected market price (₹/quintal), and cost breakdown (seed, fertilizers, pesticides, labor, irrigation/power, machinery/fuel, and mandi transport/misc).
+- **Formulas**:
+  $$\text{Total Production} = \text{Land Area} \times \text{Expected Yield per Acre}$$
+  $$\text{Total Cost} = \sum \text{Input Costs}$$
+  $$\text{Expected Revenue} = \text{Total Production} \times \text{Expected Selling Price}$$
+  $$\text{Net Profit} = \text{Expected Revenue} - \text{Total Cost}$$
+  $$\text{Profit per Acre} = \frac{\text{Net Profit}}{\text{Land Area}}$$
+  $$\text{ROI \%} = \frac{\text{Net Profit}}{\text{Total Cost}} \times 100$$
+  $$\text{Break-Even Price} = \frac{\text{Total Cost}}{\text{Total Production}}$$
+- **Outputs**: Comprehensive farm economics dashboard with visual cost percentage allocation bars and financial health rating (`EXCELLENT`, `GOOD`, `MODERATE`, `HIGH_RISK`).
+- **Frontend**: `profit-calculator.html` (`js/profit-calculator.js`) with preloaded farm budgets for Wheat, Tomato, Soybean, and Mustard.
+- **Sample Request**:
+  ```bash
+  curl -X POST http://localhost:8080/api/profit/calculate \
+    -H "Content-Type: application/json" \
+    -d '{
+      "cropName": "Wheat",
+      "landAreaAcres": 2.0,
+      "expectedYieldPerAcreQuintals": 20.0,
+      "expectedSellingPricePerQuintal": 2550.0,
+      "seedCost": 3500.0,
+      "fertilizerCost": 6500.0,
+      "pesticideCost": 2400.0,
+      "laborCost": 8500.0,
+      "irrigationCost": 3200.0,
+      "machineryCost": 5500.0,
+      "otherCost": 2500.0
+    }'
+  ```
+
+### 3. Crop Growth Calendar & Advisory (`GET /api/crop-calendar/{crop}`)
+- **Engine**: Phenological growth timeline detailing activities from seed sowing to post-harvest storage.
+- **Coverage**: Specialized timelines for Wheat, Rice (Paddy), Maize, Mustard, Cotton, Tomato, Potato, Onion, Chickpea (Gram), Bajra, and Soybean, plus adaptive fallback for other crops.
+- **Stages**:
+  1. *Sowing & Land Preparation* (Pre-sowing irrigation / Paleva, seed treatment, basal nutrition)
+  2. *Germination & Emergence / CRI* (Critical first watering window, early weed control)
+  3. *Vegetative & Tillering* (Second irrigation, top-dressing, pest scouting)
+  4. *Flowering & Booting* (Critical reproductive watering, micronutrient sprays)
+  5. *Grain Filling & Maturity* (Milking stage precautions, lodging prevention)
+  6. *Harvesting & Storage* (Withholding water before harvest, grain moisture testing <12%)
+- **Dynamic Sowing Date Calculation**: User enters their actual sowing date; the frontend calculates real-world calendar date windows for each phase.
+- **Frontend**: `crop-calendar.html` (`js/crop-calendar.js`).
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/crop-calendar/Wheat?state=Rajasthan"
+  ```
+
+### 4. Crop Price Prediction & Market Trend (`GET /api/price-prediction/{crop}`)
+- **Engine**: Statistical baseline rolling moving average and rate-of-change momentum analysis across historical APMC records.
+- **Data Integrity & Non-Fabrication**:
+  - Strictly requires a minimum of **3 historical time-series points** in the database.
+  - If records < 3: Returns an honest `INSUFFICIENT_DATA` status explaining why more data is needed, without fabricating false forecasts.
+  - If records >= 3: Projects price movements over the chosen horizon (7 to 30 days) clamped to realistic momentum bands, calculating expected range (± volatility), rolling moving average, and statistical confidence score.
+  - Displays transparent methodology and statutory advisory disclaimer on all predictions.
+- **Frontend**: `price-prediction.html` (`js/price-prediction.js`).
+- **Sample Request**:
+  ```bash
+  curl -X GET "http://localhost:8080/api/price-prediction/Wheat?state=Rajasthan&days=10"
+  ```
+
+---
 1. **Location-Aware Discovery**:
    - **📍 Use My Location**: Uses the browser Geolocation API *only* when the farmer explicitly clicks the button (never auto-collected). Accurately resolves nearby mandis.
    - **Manual State & District Filter**: For desktop users or if GPS permission is denied, full manual dropdown selection with live district loading.
@@ -138,11 +173,6 @@ Smart Krishi provides Indian farmers with nearby agricultural market (APMC Mandi
 | `SPRING_DATASOURCE_PASSWORD` | Cloud MySQL password | `your_secret_password` |
 | `JWT_SECRET` | 256-bit secret key for token authentication | `min_32_characters_random_secure_secret_key` |
 | `CORS_ALLOWED_ORIGINS` | Comma-separated allowed frontend origins | `https://*.netlify.app,https://smart-krishi.netlify.app` |
-| `AI_API_URL` | AI Inference endpoint base URL | `https://router.huggingface.co/hf-inference/models/` |
-| `AI_API_KEY` | Hugging Face free user access token | `hf_...` *(from huggingface.co/settings/tokens)* |
-| `AI_MODEL` | AI classification model repository | `linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification` |
-| `AI_CONFIDENCE_THRESHOLD` | Minimum confidence score percentage | `60.0` |
-| `ML_SERVICE_URL` | *(Optional)* Local Python ML service URL | `http://localhost:5000/predict` |
 | `MANDI_API_URL` | Open Government Data (data.gov.in) AGMARKNET endpoint | `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070` |
 | `MANDI_API_KEY` | data.gov.in free API Key | `579b464db66ec23bdd000001...` *(from data.gov.in)* |
 | `MANDI_CACHE_MINUTES` | Mandi cache duration in minutes | `15` |
@@ -160,7 +190,6 @@ Smart Krishi provides Indian farmers with nearby agricultural market (APMC Mandi
 ### Prerequisites
 - Java 17+ (`java -version`)
 - Apache Maven 3.8+ (`mvn -version`)
-- Python 3.9+ *(optional, for running local ML microservice)*
 
 ### Run Backend
 ```bash
@@ -171,13 +200,6 @@ mvn clean spring-boot:run
 - In-memory H2 database runs with automatic schema initialization and seed data.
 - H2 Console available at `http://localhost:8080/h2-console`.
 
-### (Optional) Run Option B Local Python ML Service
-```bash
-cd ml-service
-python app.py
-```
-Starts on `http://localhost:5000/predict`.
-
 ### Run Frontend
 ```bash
 cd frontend
@@ -187,7 +209,7 @@ Open `http://localhost:3000` in your web browser.
 
 ---
 
-## 🧪 Testing Live Weather, AI Disease Detection & Mandi Prices
+## 🧪 Testing Live Weather & Mandi Prices
 
 ### Testing Live Weather:
 1. Open the Weather page (`weather.html`).
@@ -197,15 +219,6 @@ Open `http://localhost:3000` in your web browser.
    - Verify that the error message *"Live weather temporarily unavailable: Location not found"* is displayed.
 4. Click **"Use My Location"**:
    - Allow location access and verify that weather for your current GPS coordinates is loaded.
-
-### Testing AI Disease Detection:
-1. Open the Disease Detection page (`disease-detection.html`).
-2. Drag and drop a plant leaf image (JPG/PNG/WebP).
-3. Verify image preview and file size indicator appear.
-4. Click **"Analyze with AI"**:
-   - The loading indicator *"Analyzing image with AI..."* will run while sending bytes to the model.
-   - Output displays confidence bar, alternative diseases, and organic/chemical treatments.
-   - If confidence is below 60%, a low-confidence warning prompts for a clearer photo.
 
 ### Testing Nearby Mandi Prices:
 1. Open the Mandi Prices page (`market-prices.html`).
@@ -245,7 +258,7 @@ Open `http://localhost:3000` in your web browser.
 ```bash
 git init
 git add .
-git commit -m "feat: complete Smart Krishi live weather and AI disease detection"
+git commit -m "feat: complete Smart Krishi precision agriculture platform"
 git branch -M main
 git remote add origin https://github.com/<your-username>/smart-krishi.git
 git push -u origin main
@@ -270,9 +283,6 @@ git push -u origin main
    - `SPRING_DATASOURCE_PASSWORD`: `<your-db-password>`
    - `JWT_SECRET`: `<your-32-char-random-jwt-key>`
    - `CORS_ALLOWED_ORIGINS`: `https://<your-netlify-subdomain>.netlify.app,https://*.netlify.app`
-   - `AI_API_URL`: `https://router.huggingface.co/hf-inference/models/`
-   - `AI_API_KEY`: `<your-free-huggingface-token>`
-   - `AI_MODEL`: `linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification`
 5. Click **Create Web Service**. Copy your live backend URL (e.g., `https://smart-krishi-backend.onrender.com`).
 
 ---
@@ -296,7 +306,7 @@ git push -u origin main
 
 | Role | Email | Password | Access Rights |
 | :--- | :--- | :--- | :--- |
-| **Farmer** | `ramesh@smartkrishi.com` | `Farmer@123` | Dashboard, Profile, Farm Management, Scans, History |
+| **Farmer** | `ramesh@smartkrishi.com` | `Farmer@123` | Dashboard, Profile, Farm Management, Crop History |
 | **System Admin** | `admin@smartkrishi.com` | `Admin@123` | Admin Portal, User Management, Add Mandi Prices & Advisories |
 
 ---
@@ -307,6 +317,5 @@ git push -u origin main
 | :--- | :--- | :--- |
 | **CORS error in browser console** | Frontend origin missing in `CORS_ALLOWED_ORIGINS` | Add your Netlify URL to Render's `CORS_ALLOWED_ORIGINS` environment variable and redeploy. |
 | **Backend 502 / Cold Start on Render** | Free tier Render instances sleep after inactivity | Free tier instances sleep after 15 mins of inactivity. The first wake-up request takes ~40 seconds. |
-| **AI Disease Analysis Unavailable** | Missing `AI_API_KEY` or model cold start | Generate a free token at [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens) and configure `AI_API_KEY`. Cold models wake up in 15 seconds. |
 | **Invalid Location on Weather Search** | Non-existent city name | Open-Meteo geocoding rejects non-existent names (e.g. `xxxxxxxx`). Check spelling or use GPS location. |
 | **Database Connection Failure** | Incorrect JDBC URL or IP restrictions | Verify `useSSL=true&allowPublicKeyRetrieval=true` is appended to the JDBC URL. Check cloud database IP whitelisting (`0.0.0.0/0`). |

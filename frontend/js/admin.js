@@ -76,7 +76,6 @@ function renderMandiSourceStatus(status) {
 function renderAdminStats(stats) {
   document.getElementById('stat-farmers').textContent = stats.totalFarmers || 0;
   document.getElementById('stat-recs').textContent = stats.totalRecommendations || 0;
-  document.getElementById('stat-diseases').textContent = stats.totalDiseaseAnalyses || 0;
   document.getElementById('stat-prices').textContent = stats.totalMarketRecords || 0;
   document.getElementById('stat-advisories').textContent = stats.totalAdvisories || 0;
 }

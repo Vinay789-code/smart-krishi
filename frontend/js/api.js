@@ -4,7 +4,15 @@
 const API = {
   async request(endpoint, options = {}) {
     const baseUrl = window.API_BASE_URL || (window.CONFIG && window.CONFIG.getApiBaseUrl ? window.CONFIG.getApiBaseUrl() : '');
-    const url = `${baseUrl}${endpoint}`;
+    let cleanBaseUrl = (baseUrl || '').replace(/\/+$/, '');
+    let cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (!cleanEndpoint.startsWith('/api') && !cleanEndpoint.startsWith('/h2-console')) {
+      cleanEndpoint = `/api${cleanEndpoint}`;
+    }
+    if (cleanBaseUrl.endsWith('/api') && cleanEndpoint.startsWith('/api')) {
+      cleanBaseUrl = cleanBaseUrl.slice(0, -4);
+    }
+    const url = `${cleanBaseUrl}${cleanEndpoint}`;
 
     const headers = { ...options.headers };
 
@@ -28,11 +36,15 @@ const API = {
 
       // Handle 401 Unauthorized only for protected endpoints requiring user login
       if (response.status === 401) {
-        const isPublicEndpoint = endpoint.includes('/disease/analyze') ||
-                                 endpoint.includes('/crops/recommend') ||
+        const isPublicEndpoint = endpoint.includes('/crops/recommend') ||
                                  endpoint.includes('/weather') ||
                                  endpoint.includes('/market') ||
-                                 endpoint.includes('/advisory');
+                                 endpoint.includes('/mandi') ||
+                                 endpoint.includes('/advisory') ||
+                                 endpoint.includes('/fertilizer') ||
+                                 endpoint.includes('/profit') ||
+                                 endpoint.includes('/crop-calendar') ||
+                                 endpoint.includes('/price-prediction');
         if (!isPublicEndpoint && !window.location.pathname.endsWith('login.html') && !window.location.pathname.endsWith('register.html')) {
           localStorage.removeItem('smart_krishi_token');
           localStorage.removeItem('smart_krishi_user');

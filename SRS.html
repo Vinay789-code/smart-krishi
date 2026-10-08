@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Krishi – Software Requirements Specification (SRS)</title>
+<style>
+  @page {
+    size: A4 portrait;
+    margin: 18mm 16mm 18mm 16mm;
+    @top-center {
+      content: "Smart Krishi – Precision Agriculture Platform | SRS v2.0";
+      font-size: 8pt;
+      color: #6b7280;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    @bottom-right {
+      content: "Page " counter(page);
+      font-size: 8pt;
+      color: #6b7280;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    font-size: 9.8pt;
+    line-height: 1.55;
+    color: #1f2937;
+    margin: 0;
+    padding: 0;
+    background: #ffffff;
+  }
+
+  /* Cover Page */
+  .cover-page {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+    break-after: page;
+    padding: 40px 20px 20px 20px;
+    border: 3px double #2e7d32;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 40%);
+  }
+
+  .cover-header {
+    text-align: center;
+  }
+
+  .cover-icon {
+    font-size: 48pt;
+    margin-bottom: 10px;
+  }
+
+  .cover-platform-name {
+    font-size: 26pt;
+    font-weight: 800;
+    color: #1b5e20;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 25px;
+  }
+
+  .cover-divider {
+    width: 100px;
+    height: 4px;
+    background: #2e7d32;
+    margin: 0 auto 30px auto;
+    border-radius: 2px;
+  }
+
+  .cover-doc-title {
+    font-size: 20pt;
+    font-weight: 800;
+    color: #111827;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+  }
+
+  .cover-doc-standard {
+    font-size: 10pt;
+    color: #4b5563;
+    font-style: italic;
+  }
+
+  .cover-meta-box {
+    background: #ffffff;
+    border: 1px solid #d1fae5;
+    border-left: 5px solid #2e7d32;
+    padding: 16px 20px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+    margin-top: 30px;
+  }
+
+  .cover-meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+
+  .cover-meta-table td {
+    padding: 5px 8px;
+    border: none;
+  }
+
+  .cover-meta-table td.label {
+    font-weight: 700;
+    color: #1b5e20;
+    width: 32%;
+  }
+
+  .cover-footer {
+    text-align: center;
+    font-size: 8.5pt;
+    color: #6b7280;
+    border-top: 1px solid #e5e7eb;
+    padding-top: 15px;
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 17pt;
+    font-weight: 800;
+    color: #14532d;
+    margin-top: 24pt;
+    margin-bottom: 10pt;
+    padding-bottom: 4pt;
+    border-bottom: 2px solid #22c55e;
+    page-break-before: always;
+    break-before: page;
+  }
+
+  h1:first-of-type {
+    page-break-before: avoid;
+    break-before: avoid;
+  }
+
+  h2 {
+    font-size: 13.5pt;
+    font-weight: 700;
+    color: #1b5e20;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    padding-bottom: 2pt;
+    border-bottom: 1px solid #e5e7eb;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #1f2937;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  h4 {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #374151;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p {
+    margin-top: 0;
+    margin-bottom: 8pt;
+    text-align: justify;
+  }
+
+  ul, ol {
+    margin-top: 0;
+    margin-bottom: 8pt;
+    padding-left: 20px;
+  }
+
+  li {
+    margin-bottom: 3pt;
+  }
+
+  hr {
+    border: 0;
+    height: 1px;
+    background: #e5e7eb;
+    margin: 16pt 0;
+  }
+
+  blockquote {
+    margin: 8pt 0;
+    padding: 6pt 12pt;
+    background: #f0fdf4;
+    border-left: 3px solid #22c55e;
+    color: #166534;
+    font-size: 9.5pt;
+  }
+
+  /* Tables */
+  .table-container {
+    width: 100%;
+    margin: 10pt 0 14pt 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.8pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  th {
+    background-color: #f0fdf4;
+    color: #14532d;
+    font-weight: 700;
+    text-align: left;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e1;
+    font-size: 8.8pt;
+  }
+
+  td {
+    padding: 5px 8px;
+    border: 1px solid #cbd5e1;
+    vertical-align: top;
+  }
+
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+
+  /* Code & Pre Blocks */
+  pre.code-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #059669;
+    padding: 8pt 10pt;
+    border-radius: 4px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.2pt;
+    line-height: 1.4;
+    overflow-x: hidden;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin: 8pt 0 12pt 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8.6pt;
+    background: #f1f5f9;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #0f766e;
+  }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .badge-high {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .badge-medium {
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+  }
+
+  .badge-low {
+    background: #e0f2fe;
+    color: #075985;
+    border: 1px solid #7dd3fc;
+  }
+
+  .math {
+    font-family: 'Times New Roman', Times, serif;
+    font-style: italic;
+    color: #1e3a8a;
+    padding: 0 2px;
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover Page -->
+<div class="cover-page">
+  <div class="cover-header">
+    <div class="cover-icon">🌾</div>
+    <div class="cover-platform-name">Smart Krishi</div>
+    <div class="cover-subtitle">Precision Agriculture & Decision Support Platform</div>
+    <div class="cover-divider"></div>
+    <div class="cover-doc-title">SOFTWARE REQUIREMENTS SPECIFICATION</div>
+    <div class="cover-doc-standard">Prepared in accordance with IEEE Std 830-1998 / ISO/IEC/IEEE 29148:2018</div>
+  </div>
+
+  <div class="cover-meta-box">
+    <table class="cover-meta-table">
+      <tr>
+        <td class="label">Document Version:</td>
+        <td>2.0 (Post-Disease Architecture, 8 Operational Modules)</td>
+      </tr>
+      <tr>
+        <td class="label">Project Title:</td>
+        <td>Smart Krishi – Precision Agriculture Platform</td>
+      </tr>
+      <tr>
+        <td class="label">Release Status:</td>
+        <td>Approved, Verified & Production-Ready</td>
+      </tr>
+      <tr>
+        <td class="label">Publication Date:</td>
+        <td>October 2026</td>
+      </tr>
+      <tr>
+        <td class="label">Backend Architecture:</td>
+        <td>Spring Boot 3.3.4, Java 17, Spring Security 6 (JWT), JPA / Hibernate</td>
+      </tr>
+      <tr>
+        <td class="label">Frontend Tech Stack:</td>
+        <td>HTML5, CSS3, ES6+ Modules, Bootstrap 5.3, Fetch API</td>
+      </tr>
+      <tr>
+        <td class="label">Database Engine:</td>
+        <td>H2 In-Memory (Dev) / Cloud MySQL 8.0+ InnoDB (Prod)</td>
+      </tr>
+      <tr>
+        <td class="label">Cloud Targets:</td>
+        <td>Netlify (Static Frontend) & Render (Dockerized Java Web Service)</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="cover-footer">
+    <div><strong>Confidential & Proprietary</strong> — For Engineering, Evaluation, and Deployment Use Only</div>
+    <div>© 2026 Smart Krishi Platform Engineering. All Rights Reserved.</div>
+  </div>
+</div>
+
+<!-- Main Body -->
+<div class="content-body">
+<h1>Software Requirements Specification (SRS)</h1>
+<h2>Smart Krishi – Precision Agriculture Platform</h2>
+<p><strong>Document Version:</strong> 2.0</p>
+<p><strong>Status:</strong> Approved & Verified</p>
+<p><strong>Date:</strong> October 2026</p>
+<p><strong>Application Scope:</strong> Web & Mobile Responsive Precision Agriculture Platform</p>
+<p><strong>Target Environment:</strong> Local Development (H2/Node/Spring Boot) & Cloud Production (Netlify/Render/MySQL 8.0+)</p>
+<hr/>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-introduction">Introduction</a></li>
+</ol>
+<ul>
+<li>1.1 Purpose</li>
+<li>1.2 Document Conventions</li>
+<li>1.3 Intended Audience</li>
+<li>1.4 Project Scope</li>
+<li>1.5 References</li>
+</ul>
+<ol>
+<li><a href="#2-overall-description">Overall Description</a></li>
+</ol>
+<ul>
+<li>2.1 Product Perspective & Context</li>
+<li>2.2 Product Functional Summary</li>
+<li>2.3 User Classes and Characteristics</li>
+<li>2.4 Operating Environment</li>
+<li>2.5 Design and Implementation Constraints</li>
+<li>2.6 Assumptions and Dependencies</li>
+</ul>
+<ol>
+<li><a href="#3-external-interface-requirements">External Interface Requirements</a></li>
+</ol>
+<ul>
+<li>3.1 User Interfaces (UI/UX)</li>
+<li>3.2 Hardware Interfaces</li>
+<li>3.3 Software Interfaces (External APIs)</li>
+<li>3.4 Communications Interfaces</li>
+</ul>
+<ol>
+<li><a href="#4-detailed-system-features--functional-requirements">Detailed System Features & Functional Requirements</a></li>
+</ol>
+<ul>
+<li>4.1 Module 1: Farmer Management & Land Profiling</li>
+<li>4.2 Module 2: Precision Crop Recommendation Engine</li>
+<li>4.3 Module 3: Live Meteorological Telemetry & Smart Irrigation Advisory</li>
+<li>4.4 Module 4: Smart Fertilizer Recommendation Advisor</li>
+<li>4.5 Module 5: Crop Profit & ROI Calculator</li>
+<li>4.6 Module 6: Crop Growth Calendar & Phenological Advisory</li>
+<li>4.7 Module 7: Crop Price Trend Prediction Engine</li>
+<li>4.8 Module 8: Nearby APMC Mandi Market Prices & Geodesic Locator</li>
+<li>4.9 Module 9: System Administration & Governance</li>
+</ul>
+<ol>
+<li><a href="#5-non-functional-requirements-nfr">Non-Functional Requirements (NFR)</a></li>
+</ol>
+<ul>
+<li>5.1 Performance Requirements</li>
+<li>5.2 Safety & Agronomic Integrity</li>
+<li>5.3 Security & Access Control</li>
+<li>5.4 Software Quality Attributes</li>
+</ul>
+<ol>
+<li><a href="#6-data-model--database-specifications">Data Model & Database Specifications</a></li>
+</ol>
+<ul>
+<li>6.1 Entity-Relationship Overview</li>
+<li>6.2 Data Dictionary & Schema Definitions</li>
+</ul>
+<ol>
+<li><a href="#7-verification-testing--traceability">Verification, Testing & Traceability</a></li>
+</ol>
+<ul>
+<li>7.1 Testing Strategy</li>
+<li>7.2 Requirements Traceability Matrix (RTM)</li>
+</ul>
+<hr/>
+<h2>1. Introduction</h2>
+<h3>1.1 Purpose</h3>
+<p>The purpose of this Software Requirements Specification (SRS) document is to provide a complete, rigorous, and definitive description of the <strong>Smart Krishi – Precision Agriculture Platform</strong>. It details the functional and non-functional requirements, external interfaces, system architecture, data models, and verification criteria for developers, software testers, system administrators, and agricultural stakeholders.</p>
+<h3>1.2 Document Conventions</h3>
+<ul>
+<li><strong>Requirement Identifiers</strong>: Requirements are labeled with <code>FR-&lt;Module&gt;-&lt;Number&gt;</code> for Functional Requirements and <code>NFR-&lt;Category&gt;-&lt;Number&gt;</code> for Non-Functional Requirements.</li>
+<li><strong>Priority Ratings</strong>:</li>
+<li><code><span class="badge badge-high">High</span></code>: Essential core capability without which the system cannot function.</li>
+<li><code><span class="badge badge-medium">Medium</span></code>: Significant capability essential for advanced decision support.</li>
+<li><code><span class="badge badge-low">Low</span></code>: Value-added capability for enhanced user convenience.</li>
+<li><strong>Standard Formatting</strong>: Bold text indicates database fields, REST endpoints, and UI elements. Code font is used for technical identifiers, class names, and schema definitions.</li>
+</ul>
+<h3>1.3 Intended Audience</h3>
+<ul>
+<li><strong>Software Engineers & Developers</strong>: For backend and frontend implementation, maintenance, and API consistency.</li>
+<li><strong>Quality Assurance & Verification Teams</strong>: For unit testing, regression testing, and acceptance validation.</li>
+<li><strong>System Administrators & DevOps</strong>: For environment provisioning, Dockerization, Render, and Netlify cloud deployments.</li>
+<li><strong>Agricultural Domain Specialists</strong>: For evaluating agronomic formulas, ICAR nutrient standards, and economic models.</li>
+</ul>
+<h3>1.4 Project Scope</h3>
+<p>Smart Krishi is an integrated digital agriculture ecosystem tailored to the specific socioeconomic and agronomic conditions of Indian farmers. The platform delivers:</p>
+<ol>
+<li>Secure farmer authentication, digital profiles, and multi-plot farm record management.</li>
+<li>Rule-based agronomic crop recommendation analyzing 8 soil and climatic parameters.</li>
+<li>Hyper-local, zero-fake real-time meteorological tracking and evapotranspiration-based irrigation scheduling via Open-Meteo.</li>
+<li>Scientific fertilizer dose calculations based on ICAR recommendations, including commercial bag conversions and split application schedules.</li>
+<li>Granular farm budgeting, revenue forecasting, cost breakdown, ROI calculation, and break-even analysis.</li>
+<li>Phenological crop growth calendars mapping critical agronomic stages from sowing to harvesting.</li>
+<li>Statistical APMC price trend forecasting utilizing moving averages and momentum analysis.</li>
+<li>Geodesic (Haversine) nearby APMC mandi discovery with turn-by-turn navigation and verified data transparency.</li>
+<li>Centralized administrative governance for platform telemetry, market commodity data, and national agricultural schemes.</li>
+</ol>
+<h3>1.5 References</h3>
+<ol>
+<li><strong>IEEE Std 830-1998</strong>: IEEE Recommended Practice for Software Requirements Specifications.</li>
+<li><strong>ISO/IEC/IEEE 29148:2018</strong>: Systems and software engineering — Life cycle processes — Requirements engineering.</li>
+<li><strong>Indian Council of Agricultural Research (ICAR)</strong>: Handbook of Agriculture & Soil Nutrient Management Guidelines.</li>
+<li><strong>Open-Meteo Meteorological Service Documentation</strong>: <code>https://open-meteo.com/en/docs</code>.</li>
+<li><strong>National Agriculture Market (e-NAM) & AGMARKNET / data.gov.in</strong>: Ministry of Agriculture & Farmers Welfare APIs.</li>
+<li><strong>Spring Boot Reference Guide (v3.3.4)</strong> & <strong>Spring Security 6 Architecture Documentation</strong>.</li>
+</ol>
+<hr/>
+<h2>2. Overall Description</h2>
+<h3>2.1 Product Perspective & Context</h3>
+<p>Smart Krishi operates as a modern distributed multi-tier client-server architecture. The frontend is a responsive single-page/multi-page web application communicating via asynchronous JSON REST APIs with a stateless Spring Boot backend.</p>
+<pre class="code-block "><code>┌────────────────────────────────────────────────────────────────────────┐
+│                        CLIENT / PRESENTATION TIER                      │
+│   Web Browsers (Desktop &amp; Mobile) — HTML5, CSS3, ES6+, Bootstrap 5.3   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ HTTPS / REST (JSON)
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        APPLICATION / SERVICE TIER                      │
+│                  Spring Boot 3.3.4 (Java 17, Spring Security 6)        │
+│                                                                        │
+│  ┌───────────────────────┐ ┌──────────────────────┐ ┌───────────────┐  │
+│  │ Farmer &amp; Profile Svc  │ │ Crop Recommend Svc   │ │ Weather Svc   │  │
+│  └───────────────────────┘ └──────────────────────┘ └───────────────┘  │
+│  ┌───────────────────────┐ ┌──────────────────────┐ ┌───────────────┐  │
+│  │ Fertilizer Advisor    │ │ Profit / ROI Engine  │ │ Crop Calendar │  │
+│  └───────────────────────┘ └──────────────────────┘ └───────────────┘  │
+│  ┌───────────────────────┐ ┌──────────────────────┐ ┌───────────────┐  │
+│  │ Price Prediction Svc  │ │ Mandi &amp; Geodesic Svc │ │ Admin Service │  │
+│  └───────────────────────┘ └──────────────────────┘ └───────────────┘  │
+└──────────────────┬─────────────────────────────────┬───────────────────┘
+                   │ JDBC / JPA                      │ HTTP Requests
+                   ▼                                 ▼
+┌──────────────────────────────────────┐  ┌──────────────────────────────┐
+│           PERSISTENCE TIER           │  │     EXTERNAL WEB SERVICES    │
+│  • Local: In-Memory H2 (MySQL Mode)  │  │  • Open-Meteo Geocoding API  │
+│  • Cloud: MySQL 8.0+ (Render/Cloud)  │  │  • Open-Meteo Forecast API   │
+│                                      │  │  • data.gov.in AGMARKNET API │
+└──────────────────────────────────────┘  └──────────────────────────────┘</code></pre>
+<h3>2.2 Product Functional Summary</h3>
+<p>The platform consists of eight integrated farmer-facing functional modules and one administrative module:</p>
+<ul>
+<li><strong>Module 1 (Farmer Management)</strong>: Account registration, secure login, profile maintenance, and multi-plot farm management.</li>
+<li><strong>Module 2 (Crop Recommendation)</strong>: Multi-parameter soil and climate crop prescription engine.</li>
+<li><strong>Module 3 (Weather & Irrigation)</strong>: Real-time telemetry, 5-day agro-meteorological forecast, and irrigation decision support.</li>
+<li><strong>Module 4 (Fertilizer Advisor)</strong>: NPK deficit calculations, commercial fertilizer bag conversions, and soil amendment recommendations.</li>
+<li><strong>Module 5 (Profit / ROI Calculator)</strong>: Farm economics calculator providing cost breakdowns, net profit, ROI, and break-even pricing.</li>
+<li><strong>Module 6 (Crop Calendar)</strong>: 6-stage phenological growth timeline, watering schedules, and state-specific agronomic advisories.</li>
+<li><strong>Module 7 (Price Prediction)</strong>: Statistical momentum and moving-average APMC commodity price forecasting.</li>
+<li><strong>Module 8 (Mandi Prices & Nearby Mandis)</strong>: GPS-enabled Haversine mandi locator, radius filtering, and commodity price discovery.</li>
+<li><strong>Module 9 (System Administration)</strong>: User management, manual mandi price seeding, and agricultural scheme publication.</li>
+</ul>
+<h3>2.3 User Classes and Characteristics</h3>
+<ol>
+<li><strong>Registered Farmer (<code>ROLE_FARMER</code>)</strong>:</li>
+</ol>
+<ul>
+<li>Primary user class. Farming background with basic digital literacy on mobile or desktop browsers.</li>
+<li>Goals: Maximizing crop yield, saving water and input costs, forecasting market profits, and finding the nearest high-paying APMC mandis.</li>
+</ul>
+<ol>
+<li><strong>Platform Administrator (<code>ROLE_ADMIN</code>)</strong>:</li>
+</ol>
+<ul>
+<li>System controllers and agricultural officers.</li>
+<li>Goals: Monitoring platform usage, curating verified commodity prices, posting government welfare advisories, and auditing registered farmers.</li>
+</ul>
+<ol>
+<li><strong>Public / Unauthenticated User</strong>:</li>
+</ol>
+<ul>
+<li>Farmers exploring the platform prior to registration.</li>
+<li>Capabilities: Access public crop recommendation tools, live weather, fertilizer advisor, profit calculator, crop calendar, price prediction, and mandi prices.</li>
+</ul>
+<h3>2.4 Operating Environment</h3>
+<ul>
+<li><strong>Client Side</strong>: Modern HTML5 compliant web browsers (Google Chrome 90+, Mozilla Firefox 88+, Apple Safari 14+, Microsoft Edge 90+) across desktop, tablet, and smartphone form factors.</li>
+<li><strong>Backend Server</strong>: Java 17 LTS runtime, Spring Boot 3.3.4, embedded Apache Tomcat 10.1, Linux/Windows operating environments, Docker containers.</li>
+<li><strong>Database System</strong>:</li>
+<li>Local/Dev: H2 In-Memory relational database (<code>MODE=MySQL</code>).</li>
+<li>Production: MySQL Server 8.0+ with InnoDB storage engine and utf8mb4 encoding.</li>
+<li><strong>Hosting Targets</strong>: Netlify for static frontend assets; Render for Dockerized Spring Boot web services.</li>
+</ul>
+<h3>2.5 Design and Implementation Constraints</h3>
+<ol>
+<li><strong>Stateless Authentication</strong>: Server must not maintain HTTP sessions for authentication; Spring Security must validate JWT Bearer tokens statelessly.</li>
+<li><strong>Zero Fake Weather Data</strong>: Hardcoded, randomized, or simulated weather is strictly prohibited. The system must query live Open-Meteo meteorological endpoints and throw explicit 404 errors for invalid locations.</li>
+<li><strong>Transparent Data Sourcing</strong>: The mandi pricing service must explicitly disclose whether data is sourced live from data.gov.in, cached, or served from the verified Smart Krishi database fallback.</li>
+<li><strong>ICAR Agronomic Adherence</strong>: Fertilizer calculations must adhere strictly to ICAR standard benchmark requirements and Indian fertilizer grades (Urea 46% N, DAP 18:46:0, MOP 60% K2O, SSP 16% P2O5).</li>
+<li><strong>No AI Disease Detection Dependency</strong>: The legacy plant disease scanner module has been permanently decommissioned to eliminate third-party computer vision API failures.</li>
+</ol>
+<h3>2.6 Assumptions and Dependencies</h3>
+<ul>
+<li>Open-Meteo APIs remain accessible without authentication for standard geocoding and meteorological forecasting queries.</li>
+<li>Client devices possess an active internet connection and, where applicable, grant browser geolocation permissions for GPS operations.</li>
+<li>Subsidized MRP rates for standard fertilizers in India remain within nominal statutory brackets.</li>
+</ul>
+<hr/>
+<h2>3. External Interface Requirements</h2>
+<h3>3.1 User Interfaces (UI/UX)</h3>
+<ul>
+<li><strong>Visual Design</strong>: The UI must reflect an agricultural green theme with primary color <code>#2e7d32</code> (Agro Forest Green), secondary accent <code>#4caf50</code>, background <code>#f4fbf4</code>, and neutral borders <code>#e0e0e0</code>.</li>
+<li><strong>Typography & Icons</strong>: Clean, highly readable typography using Google Fonts <em>Inter</em> and vector iconography via Bootstrap Icons 1.11.3.</li>
+<li><strong>Responsiveness</strong>: Fluid layout using Bootstrap 5.3 grid classes (<code>col-12</code>, <code>col-md-6</code>, <code>col-lg-4</code>) adapting across screen widths from 320px (mobile) to 1920px (desktop).</li>
+<li><strong>Interactive Feedback</strong>: Real-time validation, responsive toast notifications (<code>UI.showToast()</code>), loading spinners during asynchronous fetch calls, and modal dialogues for configuration.</li>
+</ul>
+<h3>3.2 Hardware Interfaces</h3>
+<ul>
+<li><strong>GPS / Geolocation Sensor</strong>: The browser utilizes device GPS/cellular location services via <code>navigator.geolocation.getCurrentPosition()</code> to supply high-precision coordinates for weather telemetry and nearby mandi calculation.</li>
+</ul>
+<h3>3.3 Software Interfaces (External APIs)</h3>
+<ol>
+<li><strong>Open-Meteo Geocoding API</strong>:</li>
+</ol>
+<ul>
+<li><strong>URL</strong>: <code>https://geocoding-api.open-meteo.com/v1/search</code></li>
+<li><strong>Parameters</strong>: <code>name</code> (city/district), <code>count=1</code>, <code>language=en</code>, <code>format=json</code></li>
+<li><strong>Usage</strong>: Resolves place names into exact geographic latitude and longitude coordinates.</li>
+</ul>
+<ol>
+<li><strong>Open-Meteo Weather Forecast API</strong>:</li>
+</ol>
+<ul>
+<li><strong>URL</strong>: <code>https://api.open-meteo.com/v1/forecast</code></li>
+<li><strong>Parameters</strong>: <code>latitude</code>, <code>longitude</code>, <code>current_weather=true</code>, <code>hourly=relativehumidity_2m,precipitation</code>, <code>daily=weathercode,temperature_2m_max,temperature_2m_min</code>, <code>timezone=auto</code></li>
+<li><strong>Usage</strong>: Retrieves real-time temperature, wind speed, precipitation, humidity, and 5-day forecasts.</li>
+</ul>
+<ol>
+<li><strong>data.gov.in / AGMARKNET API</strong>:</li>
+</ol>
+<ul>
+<li><strong>URL</strong>: <code>https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070</code></li>
+<li><strong>Parameters</strong>: <code>api-key</code>, <code>format=json</code>, <code>filters[state]</code>, <code>filters[district]</code></li>
+<li><strong>Usage</strong>: Fetches live commodity mandi rates published by the Ministry of Agriculture & Farmers Welfare.</li>
+</ul>
+<h3>3.4 Communications Interfaces</h3>
+<ul>
+<li><strong>Protocol</strong>: HTTP/1.1 and HTTP/2 over TLS (HTTPS).</li>
+<li><strong>Data Exchange</strong>: JSON (<code>application/json;charset=UTF-8</code>) for all client-server request and response payloads.</li>
+<li><strong>CORS Handling</strong>: Backend <code>CorsConfigurationSource</code> allows cross-origin requests from configured origins (including <code>http://localhost:3000</code> and <code>https://*.netlify.app</code>).</li>
+</ul>
+<hr/>
+<h2>4. Detailed System Features & Functional Requirements</h2>
+<h3>4.1 Module 1: Farmer Management & Land Profiling</h3>
+<h4>Description</h4>
+<p>Provides farmer identity management, JWT token issuance, multi-plot farm record maintenance, and agricultural profiling.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-1.1 <span class="badge badge-high">High</span> User Registration</strong>:</li>
+<li>The system shall allow users to register with <strong>name</strong>, <strong>email</strong>, <strong>phone</strong>, and <strong>password</strong>.</li>
+<li>Passwords must be hashed using BCrypt (cost factor 10) before persistence.</li>
+<li>Endpoint: <code>POST /api/auth/register</code></li>
+<li><strong>FR-1.2 <span class="badge badge-high">High</span> User Authentication & Token Issuance</strong>:</li>
+<li>The system shall verify credentials and issue a stateless JWT containing user email, user ID, role, and expiration (default 24 hours).</li>
+<li>Endpoint: <code>POST /api/auth/login</code></li>
+<li><strong>FR-1.3 <span class="badge badge-high">High</span> Farmer Profile Retrieval & Update</strong>:</li>
+<li>The system shall maintain farmer profile metadata including <strong>village</strong>, <strong>district</strong>, <strong>state</strong>, <strong>landArea</strong>, <strong>soilType</strong>, <strong>irrigationType</strong>, and <strong>primaryCrop</strong>.</li>
+<li>Endpoints: <code>GET /api/farmers/{id}</code>, <code>PUT /api/farmers/{id}</code></li>
+<li><strong>FR-1.4 <span class="badge badge-medium">Medium</span> Multi-Plot Farm Management</strong>:</li>
+<li>A farmer shall be able to register multiple independent farm plots with <strong>farmName</strong>, <strong>plotNumber</strong>, <strong>areaAcres</strong>, <strong>soilType</strong>, and <strong>waterSource</strong>.</li>
+<li>Endpoints: <code>POST /api/farmers/{id}/farms</code>, <code>DELETE /api/farmers/farms/{farmId}</code></li>
+<li><strong>FR-1.5 <span class="badge badge-high">High</span> Role-Based Access Control (RBAC)</strong>:</li>
+<li>Farmers may only view and modify their own agricultural records.</li>
+<li>System administrators (<code>ROLE_ADMIN</code>) have global access to manage any record.</li>
+</ul>
+<hr/>
+<h3>4.2 Module 2: Precision Crop Recommendation Engine</h3>
+<h4>Description</h4>
+<p>Prescribes agronomically suitable crops based on chemical soil composition, environmental conditions, and soil texture.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-2.1 <span class="badge badge-high">High</span> Multi-Parameter Input Validation</strong>:</li>
+<li>The system shall accept:</li>
+<li><strong>nitrogen (N)</strong>: 0.0 to 300.0 kg/ha</li>
+<li><strong>phosphorus (P)</strong>: 0.0 to 200.0 kg/ha</li>
+<li><strong>potassium (K)</strong>: 0.0 to 300.0 kg/ha</li>
+<li><strong>ph</strong>: 3.0 to 11.0</li>
+<li><strong>temperature</strong>: -10.0 to 60.0 °C</li>
+<li><strong>humidity</strong>: 0.0 to 100.0 %</li>
+<li><strong>rainfall</strong>: 0.0 to 3000.0 mm</li>
+<li><strong>soilType</strong>: Alluvial, Black, Red, Clay, Sandy, Laterite</li>
+<li>Endpoint: <code>POST /api/crops/recommend</code></li>
+<li><strong>FR-2.2 <span class="badge badge-high">High</span> Agronomic Prescription Matching</strong>:</li>
+<li>The engine shall evaluate agronomic suitability matrices across Indian crops (Rice, Wheat, Cotton, Maize, Sugarcane, Chickpea, Mustard, Groundnut, Soybean, Tomato).</li>
+<li>Example: High rainfall (>200 mm) + Clay soil + high Nitrogen -> Rice.</li>
+<li><strong>FR-2.3 <span class="badge badge-medium">Medium</span> Recommendation Enrichment</strong>:</li>
+<li>Responses shall return <strong>recommendedCrop</strong>, <strong>suitableSeason</strong> (Kharif, Rabi, Zaid), <strong>growingConditions</strong>, <strong>fertilizerSuggestion</strong>, and <strong>cropDetails</strong>.</li>
+<li><strong>FR-2.4 <span class="badge badge-medium">Medium</span> Historical Recommendation Logging</strong>:</li>
+<li>Authenticated recommendations shall be persisted into <code>crop_recommendations</code> table linked to the user account.</li>
+<li>Endpoint: <code>GET /api/farmers/{id}/recommendations</code></li>
+</ul>
+<hr/>
+<h3>4.3 Module 3: Live Meteorological Telemetry & Smart Irrigation Advisory</h3>
+<h4>Description</h4>
+<p>Provides real-time location-based atmospheric data and water management guidance without fake or simulated values.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-3.1 <span class="badge badge-high">High</span> Location Resolution</strong>:</li>
+<li>The system shall query Open-Meteo Geocoding to resolve city/district names into coordinates.</li>
+<li>If a city is not found, the system shall throw <code>ResourceNotFoundException</code> (404) with an explicit error message.</li>
+<li>Endpoint: <code>GET /api/weather?city={cityName}</code></li>
+<li><strong>FR-3.2 <span class="badge badge-high">High</span> GPS Coordinate Querying</strong>:</li>
+<li>The system shall accept GPS coordinates (<code>latitude</code>, <code>longitude</code>) directly from browser geolocation.</li>
+<li>Endpoint: <code>GET /api/weather?latitude={lat}&amp;longitude={lon}</code></li>
+<li><strong>FR-3.3 <span class="badge badge-high">High</span> Real-Time Meteorological Parameters</strong>:</li>
+<li>Must return <strong>temperature</strong>, <strong>condition</strong>, <strong>humidity</strong>, <strong>windSpeed</strong>, <strong>rainfall</strong>, and observation timestamp.</li>
+<li><strong>FR-3.4 <span class="badge badge-high">High</span> Smart Irrigation Decision Model</strong>:</li>
+<li>The engine shall compute an evapotranspiration and soil moisture deficit index:</li>
+<li><em>Rainfall > 5mm</em>: "PAUSE IRRIGATION" (Prevent root rot & waterlogging).</li>
+<li><em>High Temp (>35°C) & Low Humidity (<40%)</em>: "HEAVY IRRIGATION REQUIRED" (Early morning/evening application).</li>
+<li><em>Moderate conditions</em>: "MODERATE IRRIGATION RECOMMENDED".</li>
+<li><em>High Humidity (>85%)</em>: "LIGHT / SKIP IRRIGATION".</li>
+<li><strong>FR-3.5 <span class="badge badge-medium">Medium</span> 5-Day Agricultural Forecast</strong>:</li>
+<li>Must return daily minimum/maximum temperatures, rainfall probability, and WMO condition codes.</li>
+</ul>
+<hr/>
+<h3>4.4 Module 4: Smart Fertilizer Recommendation Advisor</h3>
+<h4>Description</h4>
+<p>Calculates exact chemical fertilizer quantities aligned with ICAR standard practices and advises soil pH correction.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-4.1 <span class="badge badge-high">High</span> Input Parsing</strong>:</li>
+<li>Accepts <strong>crop</strong>, <strong>soilType</strong>, <strong>growthStage</strong>, <strong>landArea</strong> (acres), <strong>nitrogen</strong>, <strong>phosphorus</strong>, <strong>potassium</strong>, and <strong>ph</strong>.</li>
+<li>Endpoint: <code>POST /api/fertilizer/recommend</code></li>
+<li><strong>FR-4.2 <span class="badge badge-high">High</span> Nutrient Deficit Calculation</strong>:</li>
+<li>Calculates elemental deficit: <span class="math">\Delta N = \max(0, N_{\text{target}} - N_{\text{soil}})</span>, <span class="math">\Delta P = \max(0, P_{\text{target}} - P_{\text{soil}})</span>, <span class="math">\Delta K = \max(0, K_{\text{target}} - K_{\text{soil}})</span>.</li>
+<li><strong>FR-4.3 <span class="badge badge-high">High</span> Commercial Bag Conversions</strong>:</li>
+<li>Converts required nutrients into standard Indian commercial bags:</li>
+<li>Urea (<span class="math">46\% \text{ N}</span>): <span class="math">50 \text{ kg bag}</span></li>
+<li>DAP (<span class="math">18\% \text{ N}, 46\% \text{ P}_2\text{O}_5</span>): <span class="math">50 \text{ kg bag}</span></li>
+<li>MOP (<span class="math">60\% \text{ K}_2\text{O}</span>): <span class="math">50 \text{ kg bag}</span></li>
+<li>SSP (<span class="math">16\% \text{ P}_2\text{O}_5</span>): <span class="math">50 \text{ kg bag}</span></li>
+<li>Zinc Sulphate (<span class="math">21\% \text{ Zn}</span>): <span class="math">25 \text{ kg bag}</span></li>
+<li><strong>FR-4.4 <span class="badge badge-medium">Medium</span> Stage-Specific Split Schedule</strong>:</li>
+<li>Returns basal application percentage at sowing and split top-dressing percentages at vegetative and flowering stages.</li>
+<li><strong>FR-4.5 <span class="badge badge-high">High</span> Soil pH Amendment Advisories</strong>:</li>
+<li><em>pH < 6.0 (Acidic)</em>: Prescribes agricultural lime (<span class="math">CaCO_3</span>) application to neutralize soil acidity.</li>
+<li><em>pH > 8.0 (Alkaline/Sodic)</em>: Prescribes agricultural gypsum (<span class="math">CaSO_4 \cdot 2H_2O</span>) and green manuring.</li>
+<li><strong>FR-4.6 <span class="badge badge-medium">Medium</span> Approximate Total Cost Estimation</strong>:</li>
+<li>Multiplies commercial bag counts by subsidized Indian MRP rates (Urea ₹270/bag, DAP ₹1,350/bag, MOP ₹1,700/bag, SSP ₹450/bag, Zinc ₹750/bag).</li>
+</ul>
+<hr/>
+<h3>4.5 Module 5: Crop Profit & ROI Calculator</h3>
+<h4>Description</h4>
+<p>Provides harvest financial projections, cost structure breakdowns, and investment return metrics.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-5.1 <span class="badge badge-high">High</span> Financial Input Parameters</strong>:</li>
+<li>Accepts <strong>cropName</strong>, <strong>landAreaAcres</strong>, <strong>expectedYieldPerAcreQuintals</strong>, <strong>expectedSellingPricePerQuintal</strong>, and 7 cost inputs (<strong>seedCost</strong>, <strong>fertilizerCost</strong>, <strong>pesticideCost</strong>, <strong>laborCost</strong>, <strong>irrigationCost</strong>, <strong>machineryCost</strong>, <strong>otherCost</strong>).</li>
+<li>Endpoint: <code>POST /api/profit/calculate</code></li>
+<li><strong>FR-5.2 <span class="badge badge-high">High</span> Gross Revenue Computation</strong>:</li>
+<li><span class="math">\text{Total Yield} = \text{Land Area} \times \text{Yield Per Acre}</span></li>
+<li><span class="math">\text{Gross Revenue} = \text{Total Yield} \times \text{Selling Price Per Quintal}</span></li>
+<li><strong>FR-5.3 <span class="badge badge-high">High</span> Production Cost Aggregation</strong>:</li>
+<li><span class="math">\text{Total Cost} = \sum(\text{Seed} + \text{Fertilizer} + \text{Pesticide} + \text{Labor} + \text{Irrigation} + \text{Machinery} + \text{Other})</span></li>
+<li><strong>FR-5.4 <span class="badge badge-high">High</span> Profit & ROI Calculation</strong>:</li>
+<li><span class="math">\text{Net Profit} = \text{Gross Revenue} - \text{Total Cost}</span></li>
+<li><span class="math">\text{Profit Per Acre} = \frac{\text{Net Profit}}{\text{Land Area}}</span></li>
+<li><span class="math">\text{ROI (\%)} = \left(\frac{\text{Net Profit}}{\text{Total Cost}}\right) \times 100</span></li>
+<li><strong>FR-5.5 <span class="badge badge-high">High</span> Break-Even Price Calculation</strong>:</li>
+<li><span class="math">\text{Break-Even Price Per Quintal} = \frac{\text{Total Cost}}{\text{Total Yield}}</span></li>
+<li><strong>FR-5.6 <span class="badge badge-medium">Medium</span> Financial Health Classification</strong>:</li>
+<li>Classifies crop venture: <code>EXCELLENT</code> (ROI > 100%), <code>GOOD</code> (ROI 50-100%), <code>MODERATE</code> (ROI 20-50%), <code>LOW MARGIN</code> (ROI 0-20%), <code>LOSS MAKING</code> (ROI < 0%).</li>
+</ul>
+<hr/>
+<h3>4.6 Module 6: Crop Growth Calendar & Phenological Advisory</h3>
+<h4>Description</h4>
+<p>Generates a structured timeline of crop development stages with critical agricultural action items.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-6.1 <span class="badge badge-high">High</span> Crop Growth Stages</strong>:</li>
+<li>Generates 6 discrete phenological stages:</li>
+</ul>
+<ol>
+<li>Sowing & Basal Nutrition</li>
+<li>Germination & Seedling Establishment</li>
+<li>Vegetative & Tillering / Branching</li>
+<li>Flowering & Tassel / Pod Emergence</li>
+<li>Grain Filling & Maturation</li>
+<li>Harvesting & Storage</li>
+</ol>
+<ul>
+<li>Endpoint: <code>GET /api/crop-calendar/{crop}</code></li>
+<li><strong>FR-6.2 <span class="badge badge-medium">Medium</span> Operational Milestones</strong>:</li>
+<li>Provides day ranges, irrigation requirements, fertilizer top-dressing milestones, and protective field precautions for each stage.</li>
+<li><strong>FR-6.3 <span class="badge badge-medium">Medium</span> State-Specific Agricultural Notices</strong>:</li>
+<li>Detects state query parameter (e.g. <code>?state=Rajasthan</code>) and appends tailored ICAR state package of practices.</li>
+<li><strong>FR-6.4 <span class="badge badge-low">Low</span> Generic Crop Fallback</strong>:</li>
+<li>If an unrecognized crop is queried, the system shall provide a balanced standard 120-day crop timeline.</li>
+</ul>
+<hr/>
+<h3>4.7 Module 7: Crop Price Trend Prediction Engine</h3>
+<h4>Description</h4>
+<p>Calculates short-to-medium term commodity price projections using historical APMC time-series data.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-7.1 <span class="badge badge-high">High</span> Historical Data Evaluation</strong>:</li>
+<li>Queries historical market records for the specified crop over the requested forecasting horizon (default 10 days).</li>
+<li>Requires a minimum of 3 historical data points.</li>
+<li>Endpoint: <code>GET /api/price-prediction/{crop}</code></li>
+<li><strong>FR-7.2 <span class="badge badge-high">High</span> Insufficient Data Handling</strong>:</li>
+<li>If historical points < 3, returns status <code>INSUFFICIENT_DATA</code> with a user-friendly explanation rather than failing with an error.</li>
+<li><strong>FR-7.3 <span class="badge badge-high">High</span> Statistical Momentum & Forecast Formula</strong>:</li>
+<li>Computes simple moving average: <span class="math">\text{SMA} = \frac{1}{N} \sum_{i=1}^{N} P_i</span></li>
+<li>Computes linear momentum: <span class="math">\Delta P = \frac{P_{\text{latest}} - P_{\text{earliest}}}{\Delta t}</span></li>
+<li>Forecasts price: <span class="math">P_{\text{pred}} = P_{\text{latest}} + (\Delta P \times \text{horizonDays} \times 0.5)</span></li>
+<li><strong>FR-7.4 <span class="badge badge-medium">Medium</span> Trend Classification & Confidence Score</strong>:</li>
+<li>Classifies trend as <code>RISING</code>, <code>FALLING</code>, or <code>STABLE</code>.</li>
+<li>Computes confidence score (50% to 95%) proportional to historical sample size and consistency.</li>
+<li><strong>FR-7.5 <span class="badge badge-low">Low</span> Statutory Disclaimers</strong>:</li>
+<li>Every prediction response includes a statutory agricultural market risk disclaimer.</li>
+</ul>
+<hr/>
+<h3>4.8 Module 8: Nearby APMC Mandi Market Prices & Geodesic Locator</h3>
+<h4>Description</h4>
+<p>Finds the closest operational APMC market yards and transparent market prices.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-8.1 <span class="badge badge-high">High</span> Geodesic Distance Calculation</strong>:</li>
+<li>Uses the Haversine spherical trigonometric formula:</li>
+</ul>
+<p>$<span class="math">d = 2R \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta\phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta\lambda}{2}\right)}\right)</span>$</p>
+<p>where <span class="math">R = 6371 \text{ km}</span>.</p>
+<ul>
+<li><strong>FR-8.2 <span class="badge badge-high">High</span> Radius Filtering</strong>:</li>
+<li>Allows farmers to filter mandis within <strong>10 km</strong>, <strong>25 km</strong>, <strong>50 km</strong> (default), or <strong>100 km</strong>.</li>
+<li>Mandis beyond the selected radius must be strictly excluded.</li>
+<li>Endpoint: <code>GET /api/mandi/nearby</code></li>
+<li><strong>FR-8.3 <span class="badge badge-high">High</span> Manual Location Fallback</strong>:</li>
+<li>If GPS is unavailable, farmers can specify <strong>state</strong> and <strong>district</strong> manually to search mandis.</li>
+<li><strong>FR-8.4 <span class="badge badge-high">High</span> Commodity & Distance Sorting</strong>:</li>
+<li>Results support sorting by <code>nearest</code> (distance ascending), <code>price_high</code> (modal price descending), and <code>price_low</code>.</li>
+<li><strong>FR-8.5 <span class="badge badge-high">High</span> Data Transparency & Sourcing</strong>:</li>
+<li>Responses declare their origin tag: <code>LIVE_GOV_API</code>, <code>CACHED_GOV_API</code>, or <code>VERIFIED_DATABASE_FALLBACK</code>.</li>
+<li><strong>FR-8.6 <span class="badge badge-medium">Medium</span> Navigation Deep-Linking</strong>:</li>
+<li>Each nearby mandi result includes a Google Maps navigation URL (<code>https://www.google.com/maps/dir/?api=1&amp;destination={lat},{lon}</code>).</li>
+<li><strong>FR-8.7 <span class="badge badge-medium">Medium</span> Mandi Service Health Status</strong>:</li>
+<li>Provides a status endpoint indicating government API connectivity and fallback counts.</li>
+<li>Endpoint: <code>GET /api/mandi/status</code></li>
+</ul>
+<hr/>
+<h3>4.9 Module 9: System Administration & Governance</h3>
+<h4>Description</h4>
+<p>Empowers platform administrators to oversee platform operations, audit farmer profiles, post market rates, and publish government welfare schemes.</p>
+<h4>Functional Requirements</h4>
+<ul>
+<li><strong>FR-9.1 <span class="badge badge-high">High</span> Administrative Statistics Aggregation</strong>:</li>
+<li>Aggregates count of registered farmers, total recommendations, total market price records, and total advisories.</li>
+<li>Endpoint: <code>GET /api/admin/stats</code></li>
+<li><strong>FR-9.2 <span class="badge badge-high">High</span> Farmer Directory & Account Management</strong>:</li>
+<li>Lists all registered farmers and enables account removal (preventing administrator deletion).</li>
+<li>Endpoints: <code>GET /api/admin/farmers</code>, <code>DELETE /api/admin/farmers/{userId}</code></li>
+<li><strong>FR-9.3 <span class="badge badge-medium">Medium</span> Mandi Price Record Creation</strong>:</li>
+<li>Enables publishing new APMC prices with crop, variety, mandi, district, state, min, max, modal prices, and trend.</li>
+<li>Endpoint: <code>POST /api/market/prices</code></li>
+<li><strong>FR-9.4 <span class="badge badge-medium">Medium</span> Agricultural Advisory Publication</strong>:</li>
+<li>Enables publishing government schemes (PM-KISAN, PMFBY, Soil Health Card) with category, season, target crop, details, and official URL.</li>
+<li>Endpoint: <code>POST /api/advisory</code></li>
+</ul>
+<hr/>
+<h2>5. Non-Functional Requirements (NFR)</h2>
+<h3>5.1 Performance Requirements</h3>
+<ul>
+<li><strong>NFR-PERF-1 [Response Time]</strong>: All backend calculation endpoints (Fertilizer, Profit, Calendar, Prediction) shall respond within <strong>250 milliseconds</strong> under normal load.</li>
+<li><strong>NFR-PERF-2 [External API Latency]</strong>: Open-Meteo external queries shall timeout after <strong>5,000 milliseconds</strong>, failing gracefully with user-friendly notices.</li>
+<li><strong>NFR-PERF-3 [Client Footprint]</strong>: Frontend page load shall complete in less than <strong>1.5 seconds</strong> over a standard 4G mobile connection.</li>
+</ul>
+<h3>5.2 Safety & Agronomic Integrity</h3>
+<ul>
+<li><strong>NFR-SAFE-1 [Fertilizer Safety]</strong>: The fertilizer advisor shall enforce strict upper application thresholds to prevent soil toxicity, nitrogen burn, and ground water pollution.</li>
+<li><strong>NFR-SAFE-2 [Zero Fake Telemetry]</strong>: Weather and mandi prices shall never present randomized or fabricated numbers. If external services fail, explicit notices or verified historical fallbacks must be presented.</li>
+</ul>
+<h3>5.3 Security & Access Control</h3>
+<ul>
+<li><strong>NFR-SEC-1 [Stateless JWT Authorization]</strong>: All secure farmer endpoints under <code>/api/farmers/<strong></code> and admin endpoints under <code>/api/admin/</strong></code> require a valid <code>Bearer &lt;token&gt;</code> in the <code>Authorization</code> header.</li>
+<li><strong>NFR-SEC-2 [Cryptographic Hashing]</strong>: All stored passwords must be salted and hashed with BCrypt. Plain-text passwords shall never be logged or stored.</li>
+<li><strong>NFR-SEC-3 [Input Sanitization & Injection Defense]</strong>: All database queries must execute via Spring Data JPA parameterized queries and prepared statements to eliminate SQL Injection (SQLi).</li>
+<li><strong>NFR-SEC-4 [Cross-Site Scripting (XSS) Prevention]</strong>: Dynamic frontend DOM injection must use safe property assignments (<code>textContent</code>) or pre-sanitized template interpolations.</li>
+</ul>
+<h3>5.4 Software Quality Attributes</h3>
+<ul>
+<li><strong>Availability</strong>: 99.5% uptime on production cloud deployment.</li>
+<li><strong>Reliability (Fault Tolerance)</strong>: If the primary government AGMARKNET API fails or lacks a configured key, the platform seamlessly fails over to the verified Smart Krishi database repository without interrupting the user.</li>
+<li><strong>Maintainability</strong>: Layered clean architecture separating Presentation (HTML/JS), Controller, Service, Repository, and Entity tiers.</li>
+<li><strong>Portability</strong>: Spring Boot backend packaged as a standalone executable JAR / Docker container deployable to any OCI-compliant container runner.</li>
+</ul>
+<hr/>
+<h2>6. Data Model & Database Specifications</h2>
+<h3>6.1 Entity-Relationship Overview</h3>
+<p>The database schema consists of six core relational tables. All foreign key constraints enforce referential integrity.</p>
+<pre class="code-block language-mermaid"><code>erDiagram
+    USERS ||--o| FARMER_PROFILES : &quot;has&quot;
+    USERS ||--o{ CROP_RECOMMENDATIONS : &quot;receives&quot;
+    FARMER_PROFILES ||--o{ FARMS : &quot;contains&quot;
+    
+    USERS {
+        bigint id PK
+        varchar name
+        varchar email UK
+        varchar phone
+        varchar password
+        varchar role
+        timestamp created_at
+    }
+
+    FARMER_PROFILES {
+        bigint id PK
+        bigint user_id FK
+        varchar village
+        varchar district
+        varchar state
+        double land_area
+        varchar soil_type
+        varchar irrigation_type
+        varchar primary_crop
+    }
+
+    FARMS {
+        bigint id PK
+        bigint farmer_profile_id FK
+        varchar farm_name
+        varchar plot_number
+        double area_acres
+        varchar soil_type
+        varchar water_source
+    }
+
+    CROP_RECOMMENDATIONS {
+        bigint id PK
+        bigint user_id FK
+        double nitrogen
+        double phosphorus
+        double potassium
+        double ph
+        double temperature
+        double humidity
+        double rainfall
+        varchar soil_type
+        varchar recommended_crop
+        varchar suitable_season
+        text fertilizer_suggestion
+        text growing_conditions
+    }
+
+    MARKET_PRICES {
+        bigint id PK
+        varchar crop_name
+        varchar variety
+        varchar market_name
+        varchar district
+        varchar state
+        double min_price
+        double max_price
+        double modal_price
+        varchar unit
+        date price_date
+        varchar trend
+    }
+
+    ADVISORIES {
+        bigint id PK
+        varchar title
+        varchar category
+        varchar season
+        varchar target_crop
+        text summary
+        text details
+        varchar applicable_state
+        varchar official_link
+    }</code></pre>
+<h3>6.2 Data Dictionary & Schema Definitions</h3>
+<h4>1. <code>users</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Unique primary key for user account</td></tr><tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NO</td><td>Full name of farmer / administrator</td></tr><tr><td><code>email</code></td><td>VARCHAR(120)</td><td>NO (UK)</td><td>Unique email address used for login</td></tr><tr><td><code>phone</code></td><td>VARCHAR(20)</td><td>NO</td><td>Mobile contact number</td></tr><tr><td><code>password</code></td><td>VARCHAR(255)</td><td>NO</td><td>BCrypt password hash</td></tr><tr><td><code>role</code></td><td>VARCHAR(20)</td><td>NO</td><td>Role identifier (<code>ROLE_FARMER</code>, <code>ROLE_ADMIN</code>)</td></tr><tr><td><code>created_at</code></td><td>TIMESTAMP</td><td>YES</td><td>Account registration timestamp</td></tr><tr><td><code>updated_at</code></td><td>TIMESTAMP</td><td>YES</td><td>Last profile modification timestamp</td></tr></tbody></table></div>
+<h4>2. <code>farmer_profiles</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Profile primary key</td></tr><tr><td><code>user_id</code></td><td>BIGINT</td><td>NO (FK)</td><td>Reference to <code>users.id</code> (ON DELETE CASCADE)</td></tr><tr><td><code>village</code></td><td>VARCHAR(100)</td><td>YES</td><td>Village or panchayat name</td></tr><tr><td><code>district</code></td><td>VARCHAR(100)</td><td>YES</td><td>Farming district</td></tr><tr><td><code>state</code></td><td>VARCHAR(100)</td><td>YES</td><td>State / Union territory</td></tr><tr><td><code>land_area</code></td><td>DOUBLE</td><td>YES</td><td>Total farmland holding in acres</td></tr><tr><td><code>soil_type</code></td><td>VARCHAR(50)</td><td>YES</td><td>Predominant soil classification</td></tr><tr><td><code>irrigation_type</code></td><td>VARCHAR(50)</td><td>YES</td><td>Water source (Canal, Tube Well, Drip, Rainfed)</td></tr><tr><td><code>primary_crop</code></td><td>VARCHAR(100)</td><td>YES</td><td>Primary harvested crop</td></tr></tbody></table></div>
+<h4>3. <code>farms</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Farm plot primary key</td></tr><tr><td><code>farmer_profile_id</code></td><td>BIGINT</td><td>NO (FK)</td><td>Reference to <code>farmer_profiles.id</code> (ON DELETE CASCADE)</td></tr><tr><td><code>farm_name</code></td><td>VARCHAR(100)</td><td>NO</td><td>Plot identification label</td></tr><tr><td><code>plot_number</code></td><td>VARCHAR(50)</td><td>YES</td><td>Revenue survey / khasra number</td></tr><tr><td><code>area_acres</code></td><td>DOUBLE</td><td>NO</td><td>Specific plot area in acres</td></tr><tr><td><code>soil_type</code></td><td>VARCHAR(50)</td><td>YES</td><td>Specific plot soil classification</td></tr><tr><td><code>water_source</code></td><td>VARCHAR(100)</td><td>YES</td><td>Dedicated water supply source</td></tr></tbody></table></div>
+<h4>4. <code>crop_recommendations</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Recommendation primary key</td></tr><tr><td><code>user_id</code></td><td>BIGINT</td><td>YES (FK)</td><td>Reference to <code>users.id</code> (ON DELETE SET NULL)</td></tr><tr><td><code>nitrogen</code></td><td>DOUBLE</td><td>NO</td><td>Soil Nitrogen in kg/ha</td></tr><tr><td><code>phosphorus</code></td><td>DOUBLE</td><td>NO</td><td>Soil Phosphorus in kg/ha</td></tr><tr><td><code>potassium</code></td><td>DOUBLE</td><td>NO</td><td>Soil Potassium in kg/ha</td></tr><tr><td><code>ph</code></td><td>DOUBLE</td><td>NO</td><td>Soil acidity / alkalinity level</td></tr><tr><td><code>temperature</code></td><td>DOUBLE</td><td>NO</td><td>Ambient temperature in °C</td></tr><tr><td><code>humidity</code></td><td>DOUBLE</td><td>NO</td><td>Atmospheric relative humidity %</td></tr><tr><td><code>rainfall</code></td><td>DOUBLE</td><td>NO</td><td>Average rainfall in mm</td></tr><tr><td><code>soil_type</code></td><td>VARCHAR(50)</td><td>NO</td><td>Soil type tested</td></tr><tr><td><code>recommended_crop</code></td><td>VARCHAR(100)</td><td>NO</td><td>Prescribed crop name</td></tr><tr><td><code>suitable_season</code></td><td>VARCHAR(50)</td><td>YES</td><td>Optimal cropping season</td></tr><tr><td><code>fertilizer_suggestion</code></td><td>TEXT</td><td>YES</td><td>Initial nutrient advisory</td></tr><tr><td><code>growing_conditions</code></td><td>TEXT</td><td>YES</td><td>Prescribed environmental notes</td></tr></tbody></table></div>
+<h4>5. <code>market_prices</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Market price record primary key</td></tr><tr><td><code>crop_name</code></td><td>VARCHAR(100)</td><td>NO</td><td>Commodity name (Wheat, Mustard, etc.)</td></tr><tr><td><code>variety</code></td><td>VARCHAR(100)</td><td>YES</td><td>Variety / Grade specification</td></tr><tr><td><code>market_name</code></td><td>VARCHAR(150)</td><td>NO</td><td>APMC market yard name</td></tr><tr><td><code>district</code></td><td>VARCHAR(100)</td><td>NO</td><td>District location</td></tr><tr><td><code>state</code></td><td>VARCHAR(100)</td><td>NO</td><td>State location</td></tr><tr><td><code>min_price</code></td><td>DOUBLE</td><td>NO</td><td>Minimum auction price in ₹</td></tr><tr><td><code>max_price</code></td><td>DOUBLE</td><td>NO</td><td>Maximum auction price in ₹</td></tr><tr><td><code>modal_price</code></td><td>DOUBLE</td><td>NO</td><td>Modal / Most frequent price in ₹</td></tr><tr><td><code>unit</code></td><td>VARCHAR(30)</td><td>YES</td><td>Price quotation unit (e.g. ₹/Quintal)</td></tr><tr><td><code>price_date</code></td><td>DATE</td><td>NO</td><td>Trading record date</td></tr><tr><td><code>trend</code></td><td>VARCHAR(20)</td><td>YES</td><td>Market trend (<code>RISING</code>, <code>FALLING</code>, <code>STABLE</code>)</td></tr></tbody></table></div>
+<h4>6. <code>advisories</code></h4>
+<div class="table-container"><table><thead><tr><th>Column Name</th><th>Data Type</th><th>Nullable</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td>BIGINT AUTO_INCREMENT</td><td>NO (PK)</td><td>Advisory record primary key</td></tr><tr><td><code>title</code></td><td>VARCHAR(255)</td><td>NO</td><td>Scheme or advisory title</td></tr><tr><td><code>category</code></td><td>VARCHAR(50)</td><td>NO</td><td><code>SCHEME</code>, <code>FERTILIZER</code>, <code>PEST_CONTROL</code>, etc.</td></tr><tr><td><code>season</code></td><td>VARCHAR(50)</td><td>YES</td><td>Applicable season (<code>Kharif</code>, <code>Rabi</code>, etc.)</td></tr><tr><td><code>target_crop</code></td><td>VARCHAR(100)</td><td>YES</td><td>Targeted crop or <code>All Crops</code></td></tr><tr><td><code>summary</code></td><td>TEXT</td><td>YES</td><td>Executive summary</td></tr><tr><td><code>details</code></td><td>TEXT</td><td>NO</td><td>Comprehensive guideline / eligibility</td></tr><tr><td><code>applicable_state</code></td><td>VARCHAR(100)</td><td>YES</td><td>Geographical jurisdiction</td></tr><tr><td><code>official_link</code></td><td>VARCHAR(500)</td><td>YES</td><td>Official government portal link</td></tr></tbody></table></div>
+<hr/>
+<h2>7. Verification, Testing & Traceability</h2>
+<h3>7.1 Testing Strategy</h3>
+<p>The platform undergoes multi-level automated and manual verification:</p>
+<ol>
+<li><strong>Unit & Integration Testing (Spring Boot / JUnit 5)</strong>:</li>
+</ol>
+<ul>
+<li>Automated tests executed via <code>mvn test</code> validating context initialization, algorithmic engines, security filters, and repository transactions.</li>
+<li>16 core test cases running with 0 failures, 0 errors.</li>
+</ul>
+<ol>
+<li><strong>Client-Side Syntax & Functional Audits</strong>:</li>
+</ol>
+<ul>
+<li>Automated JavaScript syntax validation with Node (<code>node -c</code>).</li>
+<li>Dynamic error boundary checking for missing backend endpoints.</li>
+</ul>
+<ol>
+<li><strong>Agronomic Boundary Verification</strong>:</li>
+</ol>
+<ul>
+<li>Verification of ICAR recommendations against empirical agricultural benchmarks.</li>
+<li>Acidic (pH < 6.0) and alkaline (pH > 8.0) soil amendment verification.</li>
+</ul>
+<h3>7.2 Requirements Traceability Matrix (RTM)</h3>
+<div class="table-container"><table><thead><tr><th>Requirement ID</th><th>Module Name</th><th>Backend Component</th><th>Frontend Component</th><th>Test Case / Verification</th></tr></thead><tbody><tr><td><strong>FR-1.1 - FR-1.5</strong></td><td>Farmer Management</td><td><code>AuthController</code>, <code>FarmerController</code>, <code>FarmerService</code></td><td><code>login.html</code>, <code>register.html</code>, <code>profile.html</code></td><td>Integration auth tests</td></tr><tr><td><strong>FR-2.1 - FR-2.4</strong></td><td>Crop Recommendation</td><td><code>CropRecommendationController</code>, <code>CropRecommendationService</code></td><td><code>crop-recommendation.html</code>, <code>crop-recommendation.js</code></td><td><code>testRiceRecommendation</code></td></tr><tr><td><strong>FR-3.1 - FR-3.5</strong></td><td>Live Weather & Irrigation</td><td><code>WeatherController</code>, <code>WeatherService</code></td><td><code>weather.html</code>, <code>dashboard.html</code></td><td><code>testWeatherAndIrrigationService</code>, <code>testWeatherMultipleLocations</code></td></tr><tr><td><strong>FR-4.1 - FR-4.6</strong></td><td>Fertilizer Advisor</td><td><code>FertilizerController</code>, <code>FertilizerService</code></td><td><code>fertilizer.html</code>, <code>fertilizer.js</code></td><td><code>testFertilizerRecommendationBalanced</code>, <code>testFertilizerAcidicAndAlkalineSoilWarnings</code></td></tr><tr><td><strong>FR-5.1 - FR-5.6</strong></td><td>Profit / ROI Calculator</td><td><code>ProfitCalculatorController</code>, <code>ProfitCalculatorService</code></td><td><code>profit-calculator.html</code>, <code>profit-calculator.js</code></td><td><code>testProfitCalculatorEconomics</code></td></tr><tr><td><strong>FR-6.1 - FR-6.4</strong></td><td>Crop Growth Calendar</td><td><code>CropCalendarController</code>, <code>CropCalendarService</code></td><td><code>crop-calendar.html</code>, <code>crop-calendar.js</code></td><td><code>testCropCalendarStagesAndStateAdvisory</code></td></tr><tr><td><strong>FR-7.1 - FR-7.5</strong></td><td>Price Trend Prediction</td><td><code>PricePredictionController</code>, <code>PricePredictionService</code></td><td><code>price-prediction.html</code>, <code>price-prediction.js</code></td><td><code>testPricePredictionSuccessWithHistoricalRecords</code>, <code>testPricePredictionInsufficientDataForRareFilter</code></td></tr><tr><td><strong>FR-8.1 - FR-8.7</strong></td><td>Nearby Mandi Prices</td><td><code>MandiController</code>, <code>MandiService</code>, <code>MandiLocationRegistry</code></td><td><code>market-prices.html</code>, <code>market-prices.js</code></td><td><code>testNearbyMandiPricesJaipur</code>, <code>testNearbyMandiRadiusFiltering</code></td></tr><tr><td><strong>FR-9.1 - FR-9.4</strong></td><td>Admin Portal</td><td><code>AdminController</code>, <code>AdminService</code></td><td><code>admin.html</code>, <code>admin.js</code></td><td>Context load & admin integration tests</td></tr></tbody></table></div>
+<hr/>
+<h2>8. Conclusion & Sign-Off</h2>
+<p>The <strong>Smart Krishi – Precision Agriculture Platform</strong> conforms strictly to this Software Requirements Specification. With all legacy disease detection dependencies eliminated, the system presents eight robust, fully tested agricultural intelligence modules ready for immediate deployment on Netlify and Render.</p>
+</div>
+
+</body>
+</html>

@@ -17,40 +17,32 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final CropRecommendationRepository cropRecommendationRepository;
-    private final DiseaseRecordRepository diseaseRecordRepository;
     private final MarketPriceRepository marketPriceRepository;
     private final AdvisoryRepository advisoryRepository;
     private final FarmerService farmerService;
     private final CropRecommendationService cropRecommendationService;
-    private final DiseaseDetectionService diseaseDetectionService;
 
     public AdminService(UserRepository userRepository,
                         CropRecommendationRepository cropRecommendationRepository,
-                        DiseaseRecordRepository diseaseRecordRepository,
                         MarketPriceRepository marketPriceRepository,
                         AdvisoryRepository advisoryRepository,
                         FarmerService farmerService,
-                        CropRecommendationService cropRecommendationService,
-                        DiseaseDetectionService diseaseDetectionService) {
+                        CropRecommendationService cropRecommendationService) {
         this.userRepository = userRepository;
         this.cropRecommendationRepository = cropRecommendationRepository;
-        this.diseaseRecordRepository = diseaseRecordRepository;
         this.marketPriceRepository = marketPriceRepository;
         this.advisoryRepository = advisoryRepository;
         this.farmerService = farmerService;
         this.cropRecommendationService = cropRecommendationService;
-        this.diseaseDetectionService = diseaseDetectionService;
     }
 
     public AdminStatsDto getAdminStats() {
         AdminStatsDto stats = new AdminStatsDto();
         stats.setTotalFarmers(userRepository.countByRole(Role.ROLE_FARMER));
         stats.setTotalRecommendations(cropRecommendationRepository.count());
-        stats.setTotalDiseaseAnalyses(diseaseRecordRepository.count());
         stats.setTotalMarketRecords(marketPriceRepository.count());
         stats.setTotalAdvisories(advisoryRepository.count());
         stats.setRecentRecommendations(cropRecommendationService.getAllRecommendations().stream().limit(5).collect(Collectors.toList()));
-        stats.setRecentDiseases(diseaseDetectionService.getAllRecords().stream().limit(5).collect(Collectors.toList()));
         return stats;
     }
 
