@@ -30,7 +30,10 @@ public class WeatherController {
             weather = weatherService.getWeatherByCity(queryCity);
         }
 
-        return ResponseEntity.ok(ApiResponse.ok("Live weather and irrigation advice retrieved", weather));
+        String msg = (weather != null && weather.isStale())
+                ? "Cached weather telemetry retrieved (upstream rate-limited)"
+                : "Live weather and irrigation advice retrieved";
+        return ResponseEntity.ok(ApiResponse.ok(msg, weather));
     }
 
     @GetMapping("/forecast")
@@ -47,6 +50,9 @@ public class WeatherController {
             weather = weatherService.getWeatherByCity(queryCity);
         }
 
-        return ResponseEntity.ok(ApiResponse.ok("5-day live weather forecast retrieved", weather));
+        String msg = (weather != null && weather.isStale())
+                ? "Cached weather forecast retrieved (upstream rate-limited)"
+                : "5-day live weather forecast retrieved";
+        return ResponseEntity.ok(ApiResponse.ok(msg, weather));
     }
 }

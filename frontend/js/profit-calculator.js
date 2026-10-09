@@ -255,7 +255,7 @@ function renderProfitResults(data, input) {
   }
 
   // Cost breakdown bars
-  renderCostBreakdown(data.costBreakdownPercentages, data.totalCost);
+  renderCostBreakdown(data.costBreakdownPercentages || data.costPercentageBreakdown, data.totalCost, data.costBreakdown);
 
   // Advisory text
   const advText = document.getElementById('prof-advisory-text');
@@ -264,37 +264,52 @@ function renderProfitResults(data, input) {
   }
 }
 
-function renderCostBreakdown(pctMap, totalCost) {
+function renderCostBreakdown(pctMap, totalCost, costMap) {
   const container = document.getElementById('cost-breakdown-container');
   if (!container || !pctMap) return;
 
-  const costLabels = {
-    seed: { name: 'Seed & Seedlings', color: '#16a34a' },
-    fertilizer: { name: 'Fertilizers & Nutrients', color: '#059669' },
-    pesticide: { name: 'Pest & Disease Sprays', color: '#d97706' },
-    labor: { name: 'Labor & Harvesting', color: '#2563eb' },
-    irrigation: { name: 'Irrigation & Power', color: '#0891b2' },
-    machinery: { name: 'Machinery & Tractor', color: '#7c3aed' },
-    other: { name: 'Transport & Mandi Misc', color: '#6b7280' }
-  };
+  const categories = [
+    { match: ['seed', 'nursery'], name: 'Seeds & Nursery', color: '#16a34a' },
+    { match: ['fertiliz'], name: 'Fertilizers & Nutrients', color: '#059669' },
+    { match: ['pesticid', 'protection'], name: 'Crop Protection / Pesticides', color: '#d97706' },
+    { match: ['labor', 'harvesting'], name: 'Labor & Harvesting', color: '#2563eb' },
+    { match: ['irrigation', 'pumping'], name: 'Irrigation & Pumping', color: '#0891b2' },
+    { match: ['machinery', 'diesel'], name: 'Machinery & Diesel', color: '#7c3aed' },
+    { match: ['other', 'misc', 'post-harvest'], name: 'Post-harvest & Misc', color: '#6b7280' }
+  ];
 
-  const keys = Object.keys(pctMap);
-  container.innerHTML = keys.map(key => {
-    const pct = pctMap[key] || 0;
-    const meta = costLabels[key] || { name: key.toUpperCase(), color: '#4b5563' };
-    const amount = (pct / 100) * totalCost;
+  const normalize = value => String(value).toLowerCase().replace(/[^a-z]/g, '');
+  const pctEntries = Object.entries(pctMap);
+  const costEntries = Object.entries(costMap || {});
+
+  container.innerHTML = pctEntries.map(([key, rawPct]) => {
+    const normalizedKey = normalize(key);
+    const category = categories.find(item =>
+      item.match.some(term => normalizedKey.includes(normalize(term)))
+    );
+
+    const name = category?.name || key;
+    const color = category?.color || '#4b5563';
+    const pct = Number(rawPct) || 0;
+
+    const matchingCost = costEntries.find(([costKey]) =>
+      normalize(costKey) === normalizedKey
+    );
+    const amount = matchingCost
+      ? Number(matchingCost[1]) || 0
+      : (pct / 100) * (Number(totalCost) || 0);
 
     return `
       <div>
         <div class="d-flex justify-content-between align-items-center small mb-1">
           <span class="fw-semibold text-secondary">
-            <span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: ${meta.color};"></span>
-            ${meta.name}
+            <span class="d-inline-block rounded-circle me-1" style="width: 10px; height: 10px; background-color: ${color};"></span>
+            ${name}
           </span>
-          <span class="text-dark fw-bold">${pct.toFixed(1)}% <span class="text-muted fw-normal">(₹ ${Math.round(amount).toLocaleString()})</span></span>
+          <span class="text-dark fw-bold">${pct.toFixed(1)}% <span class="text-muted fw-normal">(₹ ${Math.round(amount).toLocaleString('en-IN')})</span></span>
         </div>
         <div class="progress progress-cost">
-          <div class="progress-bar" role="progressbar" style="width: ${pct}%; background-color: ${meta.color};" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
+          <div class="progress-bar" role="progressbar" style="width: ${Math.max(0, Math.min(100, pct))}%; background-color: ${color};" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"></div>
         </div>
       </div>
     `;

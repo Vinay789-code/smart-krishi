@@ -7,12 +7,19 @@ import com.smartkrishi.exception.BadRequestException;
 import com.smartkrishi.exception.ResourceNotFoundException;
 import com.smartkrishi.service.CropRecommendationService;
 import com.smartkrishi.service.WeatherService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 @SpringBootTest
 class SmartKrishiApplicationTests {
@@ -22,6 +29,30 @@ class SmartKrishiApplicationTests {
 
     @Autowired
     private WeatherService weatherService;
+
+    @Autowired
+    private CacheManager cacheManager;
+
+    private MockRestServiceServer mockServer;
+
+    @BeforeEach
+    void setupWeatherMocks() {
+        if (weatherService != null && weatherService.getRestTemplate() != null) {
+            mockServer = MockRestServiceServer.bindTo(weatherService.getRestTemplate()).ignoreExpectOrder(true).build();
+        }
+        if (weatherService != null) {
+            weatherService.clearRateLimit();
+            weatherService.clearTimeoutBackoff();
+        }
+    }
+
+    private String geocodingJson(String name, double lat, double lon, String admin1) {
+        return "{\"results\":[{\"name\":\"" + name + "\",\"latitude\":" + lat + ",\"longitude\":" + lon + ",\"admin1\":\"" + admin1 + "\",\"country\":\"India\"}]}";
+    }
+
+    private String forecastJson(double temp, int humidity, double rain) {
+        return "{\"timezone\":\"Asia/Kolkata\",\"current\":{\"time\":\"2026-10-09T22:00\",\"temperature_2m\":" + temp + ",\"apparent_temperature\":" + temp + ",\"relative_humidity_2m\":" + humidity + ",\"precipitation\":" + rain + ",\"rain\":" + rain + ",\"wind_speed_10m\":12.0,\"wind_direction_10m\":180.0,\"cloud_cover\":20,\"weather_code\":1},\"daily\":{\"time\":[\"2026-10-10\",\"2026-10-11\",\"2026-10-12\",\"2026-10-13\",\"2026-10-14\"],\"temperature_2m_max\":[32.0,33.0,31.5,30.0,29.0],\"temperature_2m_min\":[22.0,21.5,20.0,19.5,18.0],\"weather_code\":[1,2,0,1,3],\"precipitation_sum\":[0.0,0.0,1.2,0.0,0.0],\"precipitation_probability_max\":[10.0,20.0,45.0,15.0,5.0]}}";
+    }
 
     @Autowired
     private com.smartkrishi.service.MandiService mandiService;
@@ -73,6 +104,11 @@ class SmartKrishiApplicationTests {
     @Test
     @DisplayName("Live Weather Service retrieves genuine Open-Meteo telemetry and forecast")
     void testWeatherAndIrrigationService() {
+        mockServer.expect(requestTo(containsString("geocoding-api.open-meteo.com")))
+                .andRespond(withSuccess(geocodingJson("Pune", 18.5204, 73.8567, "Maharashtra"), MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(containsString("api.open-meteo.com/v1/forecast")))
+                .andRespond(withSuccess(forecastJson(28.0, 65, 0.0), MediaType.APPLICATION_JSON));
+
         WeatherResponse resp = weatherService.getWeather("Pune");
         assertNotNull(resp);
         assertNotNull(resp.getLocation());
@@ -85,6 +121,21 @@ class SmartKrishiApplicationTests {
     @Test
     @DisplayName("Live Weather queries distinct locations (Jaipur, Delhi, Mumbai, Kota, Bengaluru)")
     void testWeatherMultipleLocations() {
+        mockServer.expect(requestTo(containsString("name=Jaipur")))
+                .andRespond(withSuccess(geocodingJson("Jaipur", 26.9124, 75.7873, "Rajasthan"), MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(containsString("latitude=26.9124")))
+                .andRespond(withSuccess(forecastJson(31.0, 45, 0.0), MediaType.APPLICATION_JSON));
+
+        mockServer.expect(requestTo(containsString("name=Delhi")))
+                .andRespond(withSuccess(geocodingJson("Delhi", 28.6139, 77.2090, "Delhi"), MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(containsString("latitude=28.6139")))
+                .andRespond(withSuccess(forecastJson(29.0, 50, 0.0), MediaType.APPLICATION_JSON));
+
+        mockServer.expect(requestTo(containsString("name=Mumbai")))
+                .andRespond(withSuccess(geocodingJson("Mumbai", 19.0760, 72.8777, "Maharashtra"), MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(containsString("latitude=19.0760")))
+                .andRespond(withSuccess(forecastJson(30.0, 75, 1.0), MediaType.APPLICATION_JSON));
+
         WeatherResponse jaipur = weatherService.getWeatherByCity("Jaipur");
         WeatherResponse delhi = weatherService.getWeatherByCity("Delhi");
         WeatherResponse mumbai = weatherService.getWeatherByCity("Mumbai");
@@ -103,6 +154,9 @@ class SmartKrishiApplicationTests {
     @Test
     @DisplayName("Invalid location search throws ResourceNotFoundException without returning fake weather")
     void testInvalidLocationThrowsException() {
+        mockServer.expect(requestTo(containsString("geocoding-api.open-meteo.com")))
+                .andRespond(withSuccess("{\"results\":[]}", MediaType.APPLICATION_JSON));
+
         assertThrows(ResourceNotFoundException.class, () -> {
             weatherService.getWeatherByCity("xxxxxxxx9999nonexistent");
         });
@@ -111,6 +165,11 @@ class SmartKrishiApplicationTests {
     @Test
     @DisplayName("Coordinate-based weather retrieval works with GPS coordinates")
     void testWeatherByCoordinates() {
+        mockServer.expect(requestTo(containsString("reverse-geocode-client")))
+                .andRespond(withSuccess("{\"city\":\"Jaipur\",\"principalSubdivision\":\"Rajasthan\"}", MediaType.APPLICATION_JSON));
+        mockServer.expect(requestTo(containsString("api.open-meteo.com/v1/forecast")))
+                .andRespond(withSuccess(forecastJson(29.0, 55, 0.0), MediaType.APPLICATION_JSON));
+
         // Jaipur coordinates: 26.9196, 75.7878
         WeatherResponse resp = weatherService.getWeatherByCoordinates(26.9196, 75.7878, null);
         assertNotNull(resp);

@@ -24,6 +24,13 @@ public class WeatherResponse {
     private IrrigationAdvice irrigationAdvice;
     private List<ForecastItem> forecast = new ArrayList<>();
 
+    // Reliability & caching metadata
+    private String dataSource = "LIVE";
+    private boolean cached = false;
+    private boolean stale = false;
+    private String notice;
+    private Long cachedAt;
+
     public static class ForecastItem {
         private String date;
         private String dayOfWeek;
@@ -175,4 +182,51 @@ public class WeatherResponse {
 
     public List<ForecastItem> getForecast() { return forecast; }
     public void setForecast(List<ForecastItem> forecast) { this.forecast = forecast; }
+
+    public WeatherResponse(WeatherResponse other) {
+        if (other == null) return;
+        this.location = other.location;
+        this.country = other.country;
+        this.latitude = other.latitude;
+        this.longitude = other.longitude;
+        this.temperature = other.temperature;
+        this.feelsLike = other.feelsLike;
+        this.apparentTemperature = other.apparentTemperature;
+        this.condition = other.condition;
+        this.conditionIcon = other.conditionIcon;
+        this.humidity = other.humidity;
+        this.rainfall = other.rainfall;
+        this.precipitation = other.precipitation;
+        this.windSpeed = other.windSpeed;
+        this.windDirection = other.windDirection;
+        this.cloudCover = other.cloudCover;
+        this.timezone = other.timezone;
+        this.lastUpdated = other.lastUpdated;
+        this.irrigationAdvice = other.irrigationAdvice;
+        this.forecast = other.forecast != null ? new ArrayList<>(other.forecast) : new ArrayList<>();
+        this.dataSource = other.dataSource;
+        this.cached = other.cached;
+        this.stale = other.stale;
+        this.notice = other.notice;
+        this.cachedAt = other.cachedAt;
+    }
+
+    public WeatherResponse copy() {
+        return new WeatherResponse(this);
+    }
+
+    public String getDataSource() { return dataSource; }
+    public void setDataSource(String dataSource) { this.dataSource = dataSource; }
+
+    public boolean isCached() { return cached; }
+    public void setCached(boolean cached) { this.cached = cached; }
+
+    public boolean isStale() { return stale; }
+    public void setStale(boolean stale) { this.stale = stale; }
+
+    public String getNotice() { return notice; }
+    public void setNotice(String notice) { this.notice = notice; }
+
+    public Long getCachedAt() { return cachedAt; }
+    public void setCachedAt(Long cachedAt) { this.cachedAt = cachedAt; }
 }
