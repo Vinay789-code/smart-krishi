@@ -1,5 +1,7 @@
 package com.smartkrishi.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smartkrishi.config.WeatherCacheConfig;
 import com.smartkrishi.dto.WeatherResponse;
 import com.smartkrishi.dto.WeatherResponse.ForecastItem;
@@ -9,6 +11,7 @@ import com.smartkrishi.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -20,6 +23,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -38,33 +42,104 @@ import java.util.concurrent.atomic.AtomicLong;
 public class WeatherService {
 
     private static final Logger logger = LoggerFactory.getLogger(WeatherService.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final long DEFAULT_BACKOFF_MS = 60_000L; // 60s default backoff on 429
+    private static final String DEFAULT_BASE_URL = "https://api.weatherapi.com/v1";
+    private static final long DEFAULT_BACKOFF_MS = 60_000L; // 60s default backoff on 429 / quota
     private static final long MAX_BACKOFF_MS = 300_000L;     // 5m maximum backoff
     private static final int TIMEOUT_FAILURE_THRESHOLD = 2; // Consecutive timeouts to trigger short backoff
     private static final long TIMEOUT_BACKOFF_MS = 20_000L;  // 20s short bounded backoff
 
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
+
+    @Value("${smartkrishi.weatherapi.key:${WEATHERAPI_KEY:}}")
+    private String weatherApiKey;
+
+    @Value("${smartkrishi.weatherapi.base-url:https://api.weatherapi.com/v1}")
+    private String weatherApiBaseUrl = DEFAULT_BASE_URL;
+
     private final AtomicLong rateLimitBackoffUntil = new AtomicLong(0L);
     private final AtomicInteger consecutiveTimeouts = new AtomicInteger(0);
     private final AtomicLong timeoutBackoffUntil = new AtomicLong(0L);
 
     @Autowired
-    public WeatherService(RestTemplateBuilder restTemplateBuilder, CacheManager cacheManager) {
+    public WeatherService(RestTemplateBuilder restTemplateBuilder,
+                          CacheManager cacheManager,
+                          @Value("${smartkrishi.weatherapi.key:${WEATHERAPI_KEY:}}") String weatherApiKey,
+                          @Value("${smartkrishi.weatherapi.base-url:https://api.weatherapi.com/v1}") String weatherApiBaseUrl) {
         this(restTemplateBuilder
                 .setConnectTimeout(Duration.ofSeconds(6))
                 .setReadTimeout(Duration.ofSeconds(8))
-                .build(), cacheManager);
+                .build(), cacheManager, weatherApiKey, weatherApiBaseUrl);
+    }
+
+    public WeatherService(RestTemplateBuilder restTemplateBuilder,
+                          CacheManager cacheManager,
+                          String weatherApiKey) {
+        this(restTemplateBuilder
+                .setConnectTimeout(Duration.ofSeconds(6))
+                .setReadTimeout(Duration.ofSeconds(8))
+                .build(), cacheManager, weatherApiKey, DEFAULT_BASE_URL);
+    }
+
+    public WeatherService(RestTemplateBuilder restTemplateBuilder, CacheManager cacheManager) {
+        this(restTemplateBuilder, cacheManager, Optional.ofNullable(System.getenv("WEATHERAPI_KEY"))
+                .filter(k -> !k.isBlank())
+                .orElse("test-weatherapi-key"), DEFAULT_BASE_URL);
     }
 
     public WeatherService(RestTemplate restTemplate, CacheManager cacheManager) {
+        this(restTemplate, cacheManager, Optional.ofNullable(System.getenv("WEATHERAPI_KEY"))
+                .filter(k -> !k.isBlank())
+                .orElse("test-weatherapi-key"), DEFAULT_BASE_URL);
+    }
+
+    public WeatherService(RestTemplate restTemplate, CacheManager cacheManager, String weatherApiKey) {
+        this(restTemplate, cacheManager, weatherApiKey, DEFAULT_BASE_URL);
+    }
+
+    public WeatherService(RestTemplate restTemplate, CacheManager cacheManager, String weatherApiKey, String weatherApiBaseUrl) {
         this.restTemplate = restTemplate;
         this.cacheManager = cacheManager;
+        this.weatherApiKey = (weatherApiKey != null && !weatherApiKey.isBlank()) ? weatherApiKey.trim() : null;
+        this.weatherApiBaseUrl = (weatherApiBaseUrl != null && !weatherApiBaseUrl.isBlank()) ? weatherApiBaseUrl.trim() : DEFAULT_BASE_URL;
     }
 
     public RestTemplate getRestTemplate() {
         return restTemplate;
+    }
+
+    public void setWeatherApiKey(String weatherApiKey) {
+        this.weatherApiKey = (weatherApiKey != null && !weatherApiKey.isBlank()) ? weatherApiKey.trim() : null;
+    }
+
+    public void setApiKey(String apiKey) {
+        setWeatherApiKey(apiKey);
+    }
+
+    public String getWeatherApiBaseUrl() {
+        return weatherApiBaseUrl;
+    }
+
+    public void setWeatherApiBaseUrl(String weatherApiBaseUrl) {
+        this.weatherApiBaseUrl = (weatherApiBaseUrl != null && !weatherApiBaseUrl.isBlank())
+                ? weatherApiBaseUrl.trim()
+                : DEFAULT_BASE_URL;
+    }
+
+    /**
+     * Builds the forecast endpoint URL by appending /forecast.json to the base URL,
+     * normalizing any trailing slashes to avoid duplicate slashes.
+     */
+    public String getForecastEndpointUrl() {
+        String base = (weatherApiBaseUrl != null && !weatherApiBaseUrl.isBlank())
+                ? weatherApiBaseUrl.trim()
+                : DEFAULT_BASE_URL;
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        return base + "/forecast.json";
     }
 
     /**
@@ -93,14 +168,12 @@ public class WeatherService {
     }
 
     /**
-     * Fetch live real-time weather and 5-day forecast by city/district name.
-     * Uses Open-Meteo Geocoding API to resolve exact coordinates.
+     * Fetch live real-time weather and 5-day forecast by city/district name using WeatherAPI.com.
      * Cached for 10 minutes in fresh cache. Kept for up to 6 hours in stale fallback cache.
      */
     @Cacheable(cacheNames = WeatherCacheConfig.CACHE_WEATHER_CITY,
             key = "T(com.smartkrishi.service.WeatherService).normalizeCityKey(#city)",
             unless = "#result == null || #result.stale")
-    @SuppressWarnings("unchecked")
     public WeatherResponse getWeatherByCity(String city) {
         if (city == null || city.trim().isEmpty()) {
             city = "Pune";
@@ -117,111 +190,35 @@ public class WeatherService {
             return cachedResp;
         }
 
-        // 2. Check if upstream provider is currently in a 429 rate-limit backoff window
+        // 2. Check if upstream provider is currently in rate-limit/quota backoff
         if (isRateLimited()) {
             WeatherResponse stale = getStaleWeatherCity(cityCacheKey);
             if (stale != null) {
-                logger.info("Open-Meteo upstream rate-limited (backoff active). Returning 6-hour stale fallback for city '{}'.", cleanCity);
-                return createStaleFallback(stale, "Live weather provider is temporarily rate-limited (HTTP 429). Serving cached telemetry.");
+                logger.info("WeatherAPI upstream rate-limited (backoff active). Returning 6-hour stale fallback for city '{}'.", cleanCity);
+                return createStaleFallback(stale, "Live weather provider is temporarily rate-limited or quota exceeded. Serving cached telemetry.");
             }
             long waitSec = getRemainingRateLimitSeconds();
             throw new BadRequestException("Live weather is temporarily rate-limited. Please retry in " + waitSec + " seconds.");
         }
 
-        // 2b. Check if upstream provider is currently in a network timeout backoff window
+        // 2b. Check if upstream provider is currently in network timeout backoff
         if (isTimeoutBackoffActive()) {
             WeatherResponse stale = getStaleWeatherCity(cityCacheKey);
             if (stale != null) {
-                logger.info("Open-Meteo upstream timeout backoff active. Returning 6-hour stale fallback for city '{}'.", cleanCity);
+                logger.info("WeatherAPI upstream timeout backoff active. Returning 6-hour stale fallback for city '{}'.", cleanCity);
                 return createStaleFallback(stale, "Live weather service is temporarily experiencing network timeouts. Serving cached telemetry.");
             }
             long waitSec = getRemainingTimeoutSeconds();
             throw new BadRequestException("Live weather service is temporarily experiencing network timeouts. Please retry in " + waitSec + " seconds.");
         }
 
-        // 3. Resolve coordinates using Open-Meteo Geocoding API
-        double lat;
-        double lon;
-        String resolvedLocationName;
-        String country = "India";
-
-        String geoUrl = "https://geocoding-api.open-meteo.com/v1/search?name="
-                + URLEncoder.encode(cleanCity, StandardCharsets.UTF_8)
-                + "&count=1&language=en&format=json";
-
-        try {
-            ResponseEntity<Map> geoResp = restTemplate.getForEntity(geoUrl, Map.class);
-            Map<String, Object> geoBody = geoResp.getBody();
-
-            if (geoBody == null || !geoBody.containsKey("results")) {
-                logger.warn("Open-Meteo geocoding found no results for '{}'", cleanCity);
-                throw new ResourceNotFoundException("Location '" + cleanCity + "' not found. Please verify spelling or try another city/district.");
-            }
-
-            List<Map<String, Object>> results = (List<Map<String, Object>>) geoBody.get("results");
-            if (results == null || results.isEmpty()) {
-                throw new ResourceNotFoundException("Location '" + cleanCity + "' not found. Please verify spelling or try another city/district.");
-            }
-
-            Map<String, Object> first = results.get(0);
-            lat = ((Number) first.get("latitude")).doubleValue();
-            lon = ((Number) first.get("longitude")).doubleValue();
-            String name = (String) first.get("name");
-            String admin1 = (String) first.get("admin1"); // State / province
-            String countryName = (String) first.get("country");
-            if (countryName != null && !countryName.isBlank()) {
-                country = countryName;
-            }
-
-            if (admin1 != null && !admin1.isBlank() && !admin1.equalsIgnoreCase(name)) {
-                resolvedLocationName = name + ", " + admin1;
-            } else {
-                resolvedLocationName = name;
-            }
-        } catch (ResourceNotFoundException e) {
-            throw e; // Never return fake weather for an invalid/non-existent location
-        } catch (RestClientResponseException e) {
-            logger.warn("Open-Meteo Geocoding API HTTP error: {} - {}", e.getStatusCode(), e.getMessage());
-            if (e.getStatusCode().value() == 429) {
-                recordRateLimit(parseRetryAfterMillis(e.getResponseHeaders()));
-            }
-            WeatherResponse stale = getStaleWeatherCity(cityCacheKey);
-            if (stale != null) {
-                logger.info("Returning stale cached weather for city '{}' following geocoding HTTP {} error.", cleanCity, e.getStatusCode());
-                String reason = (e.getStatusCode().value() == 429)
-                        ? "Live weather provider is temporarily rate-limited (HTTP 429). Serving cached telemetry."
-                        : "Live weather provider is temporarily unavailable. Serving cached telemetry.";
-                return createStaleFallback(stale, reason);
-            }
-            if (e.getStatusCode().value() == 429) {
-                throw new BadRequestException("Live weather is temporarily rate-limited. Please wait a few minutes and try again.");
-            }
-            throw new BadRequestException("Live weather service temporarily unavailable (Geocoding error). Please try again.");
-        } catch (ResourceAccessException e) {
-            logger.error("Open-Meteo Geocoding API timeout/connectivity error: {}", e.getMessage());
-            recordTimeout();
-            WeatherResponse stale = getStaleWeatherCity(cityCacheKey);
-            if (stale != null) {
-                logger.info("Returning stale cached weather for city '{}' following geocoding timeout.", cleanCity);
-                return createStaleFallback(stale, "Live weather service network timeout. Serving cached telemetry.");
-            }
-            throw new BadRequestException("Live weather service network timeout. Please check internet connection.");
-        } catch (Exception e) {
-            logger.error("Unexpected error during geocoding: {}", e.getMessage());
-            WeatherResponse stale = getStaleWeatherCity(cityCacheKey);
-            if (stale != null) {
-                return createStaleFallback(stale, "Live weather provider is temporarily unavailable. Serving cached telemetry.");
-            }
-            throw new BadRequestException("Failed to resolve location '" + cleanCity + "': " + e.getMessage());
-        }
-
-        // 4. Query live weather and 5-day forecast using resolved coordinates
-        return fetchLiveWeather(lat, lon, resolvedLocationName, country, cityCacheKey, null);
+        // 3. Query WeatherAPI directly using city query
+        return queryWeatherApi(cleanCity, null, null, null, cityCacheKey, null);
     }
 
     /**
-     * Fetch live real-time weather and 5-day forecast by GPS coordinates.
-     * Uses reverse geocoding to resolve a human-readable location name.
+     * Fetch live real-time weather and 5-day forecast by GPS coordinates using WeatherAPI.com.
+     * WeatherAPI resolves locality, state, and country automatically.
      */
     @Cacheable(cacheNames = WeatherCacheConfig.CACHE_WEATHER_COORDINATES,
             key = "T(com.smartkrishi.service.WeatherService).normalizeCoordsKey(#latitude, #longitude, #customLocationName)",
@@ -242,123 +239,182 @@ public class WeatherService {
             return cachedResp;
         }
 
-        // Check if upstream provider is currently in rate-limit backoff window
+        // Check if upstream provider is currently in rate-limit/quota backoff
         if (isRateLimited()) {
             WeatherResponse stale = getStaleWeatherCoordinates(coordsKey);
             if (stale != null) {
-                logger.info("Open-Meteo upstream rate-limited (backoff active). Returning 6-hour stale fallback for coords '{}'.", coordsKey);
-                return createStaleFallback(stale, "Live weather provider is temporarily rate-limited (HTTP 429). Serving cached telemetry.");
+                logger.info("WeatherAPI upstream rate-limited (backoff active). Returning 6-hour stale fallback for coords '{}'.", coordsKey);
+                return createStaleFallback(stale, "Live weather provider is temporarily rate-limited or quota exceeded. Serving cached telemetry.");
             }
             long waitSec = getRemainingRateLimitSeconds();
             throw new BadRequestException("Live weather is temporarily rate-limited. Please retry in " + waitSec + " seconds.");
         }
 
-        // Check if upstream provider is currently in network timeout backoff window
+        // Check if upstream provider is currently in network timeout backoff
         if (isTimeoutBackoffActive()) {
             WeatherResponse stale = getStaleWeatherCoordinates(coordsKey);
             if (stale != null) {
-                logger.info("Open-Meteo upstream timeout backoff active. Returning 6-hour stale fallback for coords '{}'.", coordsKey);
+                logger.info("WeatherAPI upstream timeout backoff active. Returning 6-hour stale fallback for coords '{}'.", coordsKey);
                 return createStaleFallback(stale, "Live weather service is temporarily experiencing network timeouts. Serving cached telemetry.");
             }
             long waitSec = getRemainingTimeoutSeconds();
             throw new BadRequestException("Live weather service is temporarily experiencing network timeouts. Please retry in " + waitSec + " seconds.");
         }
 
-        String resolvedName = customLocationName;
-        String country = "India";
-
-        if (resolvedName == null || resolvedName.isBlank()) {
-            resolvedName = reverseGeocode(latitude, longitude);
-        }
-
-        return fetchLiveWeather(latitude, longitude, resolvedName, country, null, coordsKey);
+        return queryWeatherApi(null, latitude, longitude, customLocationName, null, coordsKey);
     }
 
-    /**
-     * Reverse geocode coordinates to a locality name using free BigDataCloud API with fallback.
-     */
-    @SuppressWarnings("unchecked")
-    private String reverseGeocode(double lat, double lon) {
+    private static class WeatherApiError {
+        final Integer code;
+        final String message;
+
+        WeatherApiError(Integer code, String message) {
+            this.code = code;
+            this.message = message;
+        }
+    }
+
+    private WeatherApiError parseWeatherApiError(String responseBody) {
+        if (responseBody == null || responseBody.isBlank()) {
+            return new WeatherApiError(null, null);
+        }
         try {
-            String reverseUrl = String.format(Locale.US,
-                    "https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=%.4f&longitude=%.4f&localityLanguage=en",
-                    lat, lon);
-            ResponseEntity<Map> resp = restTemplate.getForEntity(reverseUrl, Map.class);
-            Map<String, Object> body = resp.getBody();
-            if (body != null) {
-                String city = (String) body.get("city");
-                if (city == null || city.isBlank()) {
-                    city = (String) body.get("locality");
-                }
-                String state = (String) body.get("principalSubdivision");
-                if (city != null && !city.isBlank()) {
-                    return (state != null && !state.isBlank() && !state.equalsIgnoreCase(city))
-                            ? city + ", " + state
-                            : city;
-                }
+            JsonNode root = objectMapper.readTree(responseBody);
+            if (root.has("error")) {
+                JsonNode errorNode = root.get("error");
+                Integer code = (errorNode.has("code") && errorNode.get("code").isNumber())
+                        ? errorNode.get("code").asInt()
+                        : null;
+                String message = errorNode.has("message")
+                        ? errorNode.get("message").asText()
+                        : null;
+                return new WeatherApiError(code, message);
             }
-        } catch (Exception e) {
-            logger.debug("Reverse geocode lookup skipped for ({}, {}): {}", lat, lon, e.getMessage());
+        } catch (Exception ignored) {
         }
-        return String.format(Locale.US, "Location (%.2f° N, %.2f° E)", lat, lon);
+        return new WeatherApiError(null, null);
     }
 
     /**
-     * Calls Open-Meteo Weather API to retrieve actual live temperature, atmospheric metrics, and 5-day forecast.
+     * Executes forecast query against WeatherAPI.com.
+     * Supports both city searches ("q=Jaipur") and coordinate queries ("q=26.9124,75.7873").
      */
     @SuppressWarnings("unchecked")
-    private WeatherResponse fetchLiveWeather(double lat, double lon, String locationName, String country, String cityCacheKey, String coordsCacheKey) {
-        String coordsKey = (coordsCacheKey != null) ? coordsCacheKey : normalizeCoordsKey(lat, lon, null);
-        String forecastUrl = String.format(Locale.US,
-                "https://api.open-meteo.com/v1/forecast?latitude=%.4f&longitude=%.4f&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&timezone=auto",
-                lat, lon);
+    private WeatherResponse queryWeatherApi(String cityQuery, Double lat, Double lon, String customLocationName,
+                                            String cityCacheKey, String coordsCacheKey) {
+        String coordsKey = (coordsCacheKey != null)
+                ? coordsCacheKey
+                : (lat != null && lon != null ? normalizeCoordsKey(lat, lon, customLocationName) : null);
+
+        // Verify API key configuration
+        if (weatherApiKey == null || weatherApiKey.isBlank()) {
+            logger.warn("WEATHERAPI_KEY is not configured. External weather calls cannot proceed.");
+            WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
+            if (stale != null) {
+                return createStaleFallback(stale, "WEATHERAPI_KEY is not configured. Serving cached telemetry.");
+            }
+            throw new BadRequestException("WEATHERAPI_KEY environment variable is not configured. Please configure your WeatherAPI.com API key.");
+        }
+
+        String queryParam;
+        if (cityQuery != null && !cityQuery.isBlank()) {
+            queryParam = cityQuery.trim();
+        } else if (lat != null && lon != null) {
+            queryParam = String.format(Locale.US, "%.4f,%.4f", lat, lon);
+        } else {
+            queryParam = "Pune";
+        }
+
+        String endpoint = getForecastEndpointUrl();
+        String url = endpoint
+                + "?key=" + URLEncoder.encode(weatherApiKey.trim(), StandardCharsets.UTF_8)
+                + "&q=" + URLEncoder.encode(queryParam, StandardCharsets.UTF_8)
+                + "&days=5&aqi=no&alerts=no";
 
         Map<String, Object> body;
         try {
-            ResponseEntity<Map> weatherResp = restTemplate.getForEntity(forecastUrl, Map.class);
-            body = weatherResp.getBody();
+            ResponseEntity<Map> resp = restTemplate.getForEntity(URI.create(url), Map.class);
+            body = resp.getBody();
         } catch (RestClientResponseException e) {
-            logger.warn("Open-Meteo Weather API HTTP error: {} - {}", e.getStatusCode(), e.getMessage());
+            int statusCode = e.getStatusCode().value();
+            String responseBody = e.getResponseBodyAsString();
+            WeatherApiError apiError = parseWeatherApiError(responseBody);
+            Integer errorCode = apiError.code;
+            String errorMessage = apiError.message;
 
-            if (e.getStatusCode().value() == 429) {
+            logger.warn("WeatherAPI HTTP error {} (code: {}) for query '{}'", statusCode, errorCode, queryParam);
+
+            // 1. Precise location not found classification:
+            // Must have structured code 1006, or an explicit "no matching location" message
+            boolean isLocationNotFound = (errorCode != null && errorCode == 1006)
+                    || (errorMessage != null && errorMessage.toLowerCase(Locale.ROOT).contains("no matching location"));
+
+            if (isLocationNotFound) {
+                logger.warn("WeatherAPI: No matching location found for query '{}'", queryParam);
+                throw new ResourceNotFoundException("Location '" + queryParam + "' not found. Please verify spelling or try another city/district.");
+            }
+
+            // 2. Check if Quota Exceeded (WeatherAPI error code 2007) or HTTP 429
+            boolean isQuotaOrRateLimit = (statusCode == 429)
+                    || (errorCode != null && errorCode == 2007)
+                    || (responseBody != null && responseBody.toLowerCase(Locale.ROOT).contains("quota"));
+
+            if (isQuotaOrRateLimit) {
                 recordRateLimit(parseRetryAfterMillis(e.getResponseHeaders()));
+                WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
+                if (stale != null) {
+                    logger.info("Returning stale cached weather for '{}' following quota/rate limit error.", queryParam);
+                    return createStaleFallback(stale, "Live weather provider quota or rate limit reached. Displaying cached telemetry.");
+                }
+                throw new BadRequestException("Live weather is temporarily rate-limited or quota exceeded. Please wait a few minutes and try again.");
             }
 
-            WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
-            if (stale != null) {
-                logger.info("Returning stale cached weather for '{}' following Open-Meteo HTTP {} error.", locationName, e.getStatusCode());
-                String reason = (e.getStatusCode().value() == 429)
-                        ? "Live weather is temporarily rate-limited (HTTP 429). Displaying cached telemetry."
-                        : "Live weather provider is temporarily unavailable. Displaying cached telemetry.";
-                return createStaleFallback(stale, reason);
+            // 3. Check if Authentication error (401, 403, error code 2006/2008)
+            boolean isAuthError = (statusCode == 401)
+                    || (errorCode != null && (errorCode == 2006 || errorCode == 2008))
+                    || (statusCode == 403 && !isQuotaOrRateLimit);
+
+            if (isAuthError) {
+                WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
+                if (stale != null) {
+                    logger.info("Returning stale cached weather for '{}' following auth error (HTTP {}).", queryParam, statusCode);
+                    return createStaleFallback(stale, "Live weather provider authentication failed. Displaying cached telemetry.");
+                }
+                throw new BadRequestException("Live weather service authentication failed. Please check WEATHERAPI_KEY configuration.");
             }
 
-            if (e.getStatusCode().value() == 429) {
-                throw new BadRequestException(
-                        "Live weather is temporarily rate-limited. Please wait a few minutes and try again.");
-            }
-
-            throw new BadRequestException(
-                    "Live weather provider is temporarily unavailable. Please try again later.");
-        } catch (ResourceAccessException e) {
-            logger.error("Open-Meteo Weather API timeout/network error: {}", e.getMessage());
-            recordTimeout();
-            WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
-            if (stale != null) {
-                logger.info("Returning stale cached weather for '{}' following Open-Meteo network timeout.", locationName);
-                return createStaleFallback(stale, "Live weather service timed out. Displaying cached telemetry.");
-            }
-            throw new BadRequestException("Live weather service timed out. Please check your network connection.");
-        } catch (Exception e) {
-            logger.error("Failed to query Open-Meteo weather: {}", e.getMessage());
+            // 4. Other HTTP errors (including other HTTP 400 errors, 5xx, etc.)
             WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
             if (stale != null) {
                 return createStaleFallback(stale, "Live weather provider is temporarily unavailable. Displaying cached telemetry.");
             }
-            throw new BadRequestException("Unable to retrieve live weather data: " + e.getMessage());
+            String detail = (errorMessage != null && !errorMessage.isBlank())
+                    ? errorMessage
+                    : "Live weather provider is temporarily unavailable. Please try again later.";
+            throw new BadRequestException("Live weather provider error: " + detail);
+
+        } catch (ResourceAccessException e) {
+            logger.error("WeatherAPI network/timeout error for query '{}': {}", queryParam, e.getMessage());
+            recordTimeout();
+            WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
+            if (stale != null) {
+                logger.info("Returning stale cached weather for '{}' following WeatherAPI network timeout.", queryParam);
+                return createStaleFallback(stale, "Live weather service timed out. Displaying cached telemetry.");
+            }
+            throw new BadRequestException("Live weather service timed out. Please check your network connection.");
+
+        } catch (ResourceNotFoundException | BadRequestException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unexpected error querying WeatherAPI for query '{}': {}", queryParam, e.getMessage());
+            WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
+            if (stale != null) {
+                return createStaleFallback(stale, "Live weather provider is temporarily unavailable. Displaying cached telemetry.");
+            }
+            throw new BadRequestException("Failed to retrieve live weather data: " + e.getMessage());
         }
 
-        if (body == null || !body.containsKey("current")) {
+        if (body == null || !body.containsKey("current") || !body.containsKey("location")) {
             WeatherResponse stale = findStaleFallback(cityCacheKey, coordsKey);
             if (stale != null) {
                 return createStaleFallback(stale, "Live weather data currently unavailable from provider. Displaying cached telemetry.");
@@ -366,50 +422,73 @@ public class WeatherService {
             throw new BadRequestException("Live weather data currently unavailable from provider.");
         }
 
+        return mapWeatherApiResponse(body, customLocationName, cityCacheKey, coordsKey, queryParam);
+    }
+
+    /**
+     * Maps WeatherAPI.com JSON response into the existing WeatherResponse structure.
+     */
+    @SuppressWarnings("unchecked")
+    private WeatherResponse mapWeatherApiResponse(Map<String, Object> body, String customLocationName,
+                                                  String cityCacheKey, String coordsCacheKey, String originalQuery) {
+        Map<String, Object> location = (Map<String, Object>) body.get("location");
         Map<String, Object> current = (Map<String, Object>) body.get("current");
-        Map<String, Object> daily = (Map<String, Object>) body.get("daily");
+        Map<String, Object> forecast = (Map<String, Object>) body.get("forecast");
 
-        WeatherResponse resp = new WeatherResponse();
-        resp.setLocation(locationName);
-        resp.setCountry(country);
-        resp.setLatitude(lat);
-        resp.setLongitude(lon);
-        resp.setTimezone((String) body.get("timezone"));
+        String name = (String) location.get("name");
+        String region = (String) location.get("region");
+        String country = (String) location.get("country");
+        double resolvedLat = location.containsKey("lat") ? ((Number) location.get("lat")).doubleValue() : 0.0;
+        double resolvedLon = location.containsKey("lon") ? ((Number) location.get("lon")).doubleValue() : 0.0;
+        String tzId = (String) location.get("tz_id");
 
-        double temp = ((Number) current.get("temperature_2m")).doubleValue();
-        double feelsLike = current.containsKey("apparent_temperature")
-                ? ((Number) current.get("apparent_temperature")).doubleValue()
-                : temp;
-        int humidity = ((Number) current.get("relative_humidity_2m")).intValue();
-        double precipitation = current.containsKey("precipitation")
-                ? ((Number) current.get("precipitation")).doubleValue()
-                : 0.0;
-        double rain = current.containsKey("rain")
-                ? ((Number) current.get("rain")).doubleValue()
-                : precipitation;
-        double wind = ((Number) current.get("wind_speed_10m")).doubleValue();
-        double windDir = current.containsKey("wind_direction_10m")
-                ? ((Number) current.get("wind_direction_10m")).doubleValue()
-                : 0.0;
-        int cloudCover = current.containsKey("cloud_cover")
-                ? ((Number) current.get("cloud_cover")).intValue()
-                : 0;
-        int weatherCode = ((Number) current.get("weather_code")).intValue();
+        String resolvedLocationName;
+        if (customLocationName != null && !customLocationName.isBlank()) {
+            resolvedLocationName = customLocationName.trim();
+        } else if (name != null && !name.isBlank()) {
+            if (region != null && !region.isBlank() && !region.equalsIgnoreCase(name)) {
+                resolvedLocationName = name + ", " + region;
+            } else {
+                resolvedLocationName = name;
+            }
+        } else {
+            resolvedLocationName = (originalQuery != null) ? originalQuery : "Jaipur, Rajasthan";
+        }
 
-        String rawTime = (String) current.get("time");
+        double temp = current.containsKey("temp_c") ? ((Number) current.get("temp_c")).doubleValue() : 0.0;
+        double feelsLike = current.containsKey("feelslike_c") ? ((Number) current.get("feelslike_c")).doubleValue() : temp;
+        int humidity = current.containsKey("humidity") ? ((Number) current.get("humidity")).intValue() : 0;
+        double precip = current.containsKey("precip_mm") ? ((Number) current.get("precip_mm")).doubleValue() : 0.0;
+        double windKph = current.containsKey("wind_kph") ? ((Number) current.get("wind_kph")).doubleValue() : 0.0;
+        double windDegree = current.containsKey("wind_degree") ? ((Number) current.get("wind_degree")).doubleValue() : 0.0;
+        int cloud = current.containsKey("cloud") ? ((Number) current.get("cloud")).intValue() : 0;
+        boolean isDay = !current.containsKey("is_day") || ((Number) current.get("is_day")).intValue() == 1;
+
+        Map<String, Object> conditionMap = (Map<String, Object>) current.get("condition");
+        String conditionText = conditionMap != null && conditionMap.containsKey("text") ? (String) conditionMap.get("text") : "Clear";
+        int conditionCode = conditionMap != null && conditionMap.containsKey("code") ? ((Number) conditionMap.get("code")).intValue() : 1000;
+        String conditionIcon = mapWeatherApiConditionToIcon(conditionCode, isDay);
+
+        String rawTime = (String) current.get("last_updated");
         String formattedUpdatedTime = formatObservationTime(rawTime);
 
+        WeatherResponse resp = new WeatherResponse();
+        resp.setLocation(resolvedLocationName);
+        resp.setCountry(country != null && !country.isBlank() ? country : "India");
+        resp.setLatitude(resolvedLat);
+        resp.setLongitude(resolvedLon);
+        resp.setTimezone(tzId);
         resp.setTemperature(temp);
         resp.setFeelsLike(feelsLike);
         resp.setApparentTemperature(feelsLike);
         resp.setHumidity(humidity);
-        resp.setPrecipitation(precipitation);
-        resp.setRainfall(rain);
-        resp.setWindSpeed(wind);
-        resp.setWindDirection(windDir);
-        resp.setCloudCover(cloudCover);
-        resp.setCondition(mapWmoCodeToCondition(weatherCode));
-        resp.setConditionIcon(mapWmoCodeToIcon(weatherCode));
+        resp.setPrecipitation(precip);
+        resp.setRainfall(precip);
+        resp.setWindSpeed(windKph);
+        resp.setWindDirection(windDegree);
+        resp.setCloudCover(cloud);
+        resp.setCondition(conditionText);
+        resp.setConditionIcon(conditionIcon);
         resp.setLastUpdated(formattedUpdatedTime);
 
         // Reliability metadata
@@ -419,56 +498,61 @@ public class WeatherService {
         resp.setCachedAt(System.currentTimeMillis());
         resp.setNotice(null);
 
-        // Parse daily 5-day forecast
+        // Parse Forecast items (up to 5 days)
         List<ForecastItem> forecastList = new ArrayList<>();
-        if (daily != null) {
-            List<String> dates = (List<String>) daily.get("time");
-            List<Number> maxTemps = (List<Number>) daily.get("temperature_2m_max");
-            List<Number> minTemps = (List<Number>) daily.get("temperature_2m_min");
-            List<Number> codes = (List<Number>) daily.get("weather_code");
-            List<Number> rainSums = (List<Number>) daily.get("precipitation_sum");
-            List<Number> rainProbs = (List<Number>) daily.get("precipitation_probability_max");
-
-            int count = Math.min(dates != null ? dates.size() : 0, 5);
+        if (forecast != null && forecast.containsKey("forecastday")) {
+            List<Map<String, Object>> forecastDays = (List<Map<String, Object>>) forecast.get("forecastday");
+            int count = Math.min(forecastDays.size(), 5);
             for (int i = 0; i < count; i++) {
-                LocalDate date = LocalDate.parse(dates.get(i));
-                String dayName = date.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
-                double tMin = minTemps.get(i).doubleValue();
-                double tMax = maxTemps.get(i).doubleValue();
-                int wCode = codes.get(i).intValue();
-                double rainSum = (rainSums != null && i < rainSums.size() && rainSums.get(i) != null)
-                        ? rainSums.get(i).doubleValue()
-                        : 0.0;
-                double rainProb = (rainProbs != null && i < rainProbs.size() && rainProbs.get(i) != null)
-                        ? rainProbs.get(i).doubleValue()
-                        : 0.0;
+                Map<String, Object> fDay = forecastDays.get(i);
+                String dateStr = (String) fDay.get("date");
+                String dayOfWeek = "Today";
+                try {
+                    if (dateStr != null) {
+                        LocalDate ld = LocalDate.parse(dateStr);
+                        dayOfWeek = ld.getDayOfWeek().getDisplayName(TextStyle.SHORT, Locale.ENGLISH);
+                    }
+                } catch (Exception ignored) {}
+
+                Map<String, Object> day = (Map<String, Object>) fDay.get("day");
+                double tMin = (day != null && day.containsKey("mintemp_c")) ? ((Number) day.get("mintemp_c")).doubleValue() : temp;
+                double tMax = (day != null && day.containsKey("maxtemp_c")) ? ((Number) day.get("maxtemp_c")).doubleValue() : temp;
+                Map<String, Object> dayCond = (day != null) ? (Map<String, Object>) day.get("condition") : null;
+                String dayCondText = (dayCond != null && dayCond.containsKey("text")) ? (String) dayCond.get("text") : "Clear";
+                int dayCondCode = (dayCond != null && dayCond.containsKey("code")) ? ((Number) dayCond.get("code")).intValue() : 1000;
+                String dayCondIcon = mapWeatherApiConditionToIcon(dayCondCode, true);
+                double rainProb = (day != null && day.containsKey("daily_chance_of_rain")) ? ((Number) day.get("daily_chance_of_rain")).doubleValue() : 0.0;
+                double rainMm = (day != null && day.containsKey("totalprecip_mm")) ? ((Number) day.get("totalprecip_mm")).doubleValue() : 0.0;
 
                 forecastList.add(new ForecastItem(
-                        dates.get(i),
-                        dayName,
+                        dateStr,
+                        dayOfWeek,
                         tMin,
                         tMax,
-                        mapWmoCodeToCondition(wCode),
-                        mapWmoCodeToIcon(wCode),
+                        dayCondText,
+                        dayCondIcon,
                         rainProb,
-                        rainSum
+                        rainMm
                 ));
             }
         }
         resp.setForecast(forecastList);
 
-        // Calculate precision irrigation advice from real telemetry
-        resp.setIrrigationAdvice(calculateIrrigationAdvice(temp, humidity, rain, "Alluvial"));
+        // Precision irrigation advice from live telemetry
+        resp.setIrrigationAdvice(calculateIrrigationAdvice(temp, humidity, precip, "Alluvial"));
 
         // Reset consecutive timeout counter upon successful upstream response
         recordSuccess();
 
-        // Store into fresh caches and 6-hour stale fallback caches
-        putInCache(WeatherCacheConfig.CACHE_WEATHER_COORDINATES, coordsKey, resp);
-        putInCache(WeatherCacheConfig.CACHE_WEATHER_COORDINATES_STALE, coordsKey, resp);
-        if (cityCacheKey != null && !cityCacheKey.isBlank()) {
-            putInCache(WeatherCacheConfig.CACHE_WEATHER_CITY, cityCacheKey, resp);
-            putInCache(WeatherCacheConfig.CACHE_WEATHER_CITY_STALE, cityCacheKey, resp);
+        // Populate fresh and 6-hour stale fallback caches
+        String cKey = (coordsCacheKey != null) ? coordsCacheKey : normalizeCoordsKey(resolvedLat, resolvedLon, customLocationName);
+        putInCache(WeatherCacheConfig.CACHE_WEATHER_COORDINATES, cKey, resp);
+        putInCache(WeatherCacheConfig.CACHE_WEATHER_COORDINATES_STALE, cKey, resp);
+
+        String cCityKey = (cityCacheKey != null) ? cityCacheKey : (name != null ? normalizeCityKey(name) : null);
+        if (cCityKey != null && !cCityKey.isBlank()) {
+            putInCache(WeatherCacheConfig.CACHE_WEATHER_CITY, cCityKey, resp);
+            putInCache(WeatherCacheConfig.CACHE_WEATHER_CITY_STALE, cCityKey, resp);
         }
 
         return resp;
@@ -549,7 +633,7 @@ public class WeatherService {
         long backoff = Math.min(Math.max(retryAfterMs, 5000L), MAX_BACKOFF_MS);
         long target = System.currentTimeMillis() + backoff;
         rateLimitBackoffUntil.updateAndGet(current -> Math.max(current, target));
-        logger.warn("Open-Meteo rate limit recorded. Backing off external calls for {} ms (until {})", backoff, target);
+        logger.warn("WeatherAPI rate limit recorded. Backing off external calls for {} ms (until {})", backoff, target);
     }
 
     public void clearRateLimit() {
@@ -570,7 +654,7 @@ public class WeatherService {
         if (count >= TIMEOUT_FAILURE_THRESHOLD) {
             long target = System.currentTimeMillis() + TIMEOUT_BACKOFF_MS;
             timeoutBackoffUntil.updateAndGet(current -> Math.max(current, target));
-            logger.warn("Repeated Open-Meteo timeouts observed (consecutive={}). Backing off external calls for {} ms (until {})",
+            logger.warn("Repeated WeatherAPI timeouts observed (consecutive={}). Backing off external calls for {} ms (until {})",
                     count, TIMEOUT_BACKOFF_MS, target);
         }
     }
@@ -613,15 +697,21 @@ public class WeatherService {
         return DEFAULT_BACKOFF_MS;
     }
 
-    private String formatObservationTime(String rawIsoTime) {
-        if (rawIsoTime == null || rawIsoTime.isBlank()) {
+    private String formatObservationTime(String rawTime) {
+        if (rawTime == null || rawTime.isBlank()) {
             return LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
         }
         try {
-            LocalDateTime ldt = LocalDateTime.parse(rawIsoTime);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            LocalDateTime ldt = LocalDateTime.parse(rawTime.trim(), formatter);
             return ldt.format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
-        } catch (Exception e) {
-            return rawIsoTime;
+        } catch (Exception e1) {
+            try {
+                LocalDateTime ldt = LocalDateTime.parse(rawTime.trim());
+                return ldt.format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+            } catch (Exception e2) {
+                return rawTime;
+            }
         }
     }
 
@@ -665,29 +755,43 @@ public class WeatherService {
         }
     }
 
-    private String mapWmoCodeToCondition(int code) {
-        if (code == 0) return "Clear Sky";
-        if (code == 1) return "Mainly Clear";
-        if (code == 2) return "Partly Cloudy";
-        if (code == 3) return "Overcast";
-        if (code >= 45 && code <= 48) return "Foggy / Mist";
-        if (code >= 51 && code <= 55) return "Light Drizzle";
-        if (code >= 61 && code <= 65) return "Rain Showers";
-        if (code >= 71 && code <= 77) return "Snow Flurries";
-        if (code >= 80 && code <= 82) return "Heavy Rain Showers";
-        if (code >= 95) return "Thunderstorm";
-        return "Pleasant / Clear";
-    }
-
-    private String mapWmoCodeToIcon(int code) {
-        if (code == 0) return "bi-sun-fill";
-        if (code == 1 || code == 2) return "bi-cloud-sun-fill";
-        if (code == 3) return "bi-clouds-fill";
-        if (code >= 45 && code <= 48) return "bi-cloud-fog2-fill";
-        if (code >= 51 && code <= 55) return "bi-cloud-drizzle-fill";
-        if (code >= 61 && code <= 65) return "bi-cloud-rain-fill";
-        if (code >= 80 && code <= 82) return "bi-cloud-rain-heavy-fill";
-        if (code >= 95) return "bi-cloud-lightning-rain-fill";
-        return "bi-sun-fill";
+    /**
+     * Maps WeatherAPI condition codes to standard Bootstrap Icons.
+     */
+    public static String mapWeatherApiConditionToIcon(int code, boolean isDay) {
+        if (code == 1000) { // Sunny / Clear
+            return isDay ? "bi-sun-fill" : "bi-moon-stars-fill";
+        }
+        if (code == 1003) { // Partly cloudy
+            return isDay ? "bi-cloud-sun-fill" : "bi-cloud-moon-fill";
+        }
+        if (code == 1006 || code == 1009) { // Cloudy / Overcast
+            return "bi-clouds-fill";
+        }
+        if (code == 1030 || code == 1135 || code == 1147) { // Mist, Fog
+            return "bi-cloud-fog2-fill";
+        }
+        if (code == 1063 || code == 1150 || code == 1153 || code == 1168 || code == 1171) { // Drizzle
+            return "bi-cloud-drizzle-fill";
+        }
+        if (code == 1066 || code == 1114 || code == 1117 || code >= 1210 && code <= 1225) { // Snow
+            return "bi-snow";
+        }
+        if (code == 1069 || code == 1072 || code == 1198 || code == 1201 || code >= 1204 && code <= 1207 || code >= 1249 && code <= 1264) { // Sleet / Freezing rain
+            return "bi-cloud-sleet-fill";
+        }
+        if (code == 1087) { // Thundery
+            return "bi-cloud-lightning-fill";
+        }
+        if (code == 1180 || code == 1183 || code == 1186 || code == 1189) { // Light / Moderate rain
+            return "bi-cloud-rain-fill";
+        }
+        if (code == 1192 || code == 1195 || code >= 1240 && code <= 1246) { // Heavy rain / showers
+            return "bi-cloud-rain-heavy-fill";
+        }
+        if (code >= 1273 && code <= 1282) { // Thunder with rain or snow
+            return "bi-cloud-lightning-rain-fill";
+        }
+        return isDay ? "bi-sun-fill" : "bi-moon-stars-fill";
     }
 }
